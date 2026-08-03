@@ -1,0 +1,36 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Local data, downloaded weights and experiment artifacts
+data/
+models/
+runs/
+*.pth
+*.pt
+*.ckpt
+
+# Locally downloaded installers and rendered scratch presentations
+*.AppImage
+*.deb
+test.html
+test.pdf
+test2.html
+test2.pdf
+test_files/
+test2_files/
+
+# Scratch presentation drafts found during the initial repository audit
+dinov3_presentation.pdf
+dinov3_presentation.qmd
+test.qmd
+test2.qmd
+
+# Editors and OS files
+.idea/
+.vscode/
+.DS_Store

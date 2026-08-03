@@ -1,0 +1,201 @@
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import platform
+import random
+import subprocess
+from contextlib import nullcontext
+from datetime import datetime, timezone
+from pathlib import Path
+
+import numpy as np
+import torch
+import yaml
+from torch import nn
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+from transformers import AutoImageProcessor
+
+from .config import Config, load_config
+from .data import PlantSegDataset
+from .metrics import SegmentationMetrics
+from .model import DINOv3Segmenter
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Train a DINOv3 PlantSeg probe")
+    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--data-root", type=Path, help="Override data.root from YAML")
+    parser.add_argument("--smoke-test", action="store_true", help="Use 32 train and 16 val samples")
+    return parser.parse_args()
+
+
+def set_seed(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+def make_run_dir(config: Config) -> Path:
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    path = Path(config.experiment.output_dir) / f"{timestamp}_{config.experiment.name}"
+    path.mkdir(parents=True, exist_ok=False)
+    return path
+
+
+def environment() -> dict[str, object]:
+    try:
+        commit = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL
+        ).strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        commit = None
+    return {
+        "git_commit": commit,
+        "python": platform.python_version(),
+        "torch": torch.__version__,
+        "cuda_runtime": torch.version.cuda,
+        "cuda_available": torch.cuda.is_available(),
+        "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
+    }
+
+
+def make_loader(dataset, config: Config, shuffle: bool) -> DataLoader:
+    return DataLoader(
+        dataset,
+        batch_size=config.data.batch_size,
+        shuffle=shuffle,
+        num_workers=config.data.num_workers,
+        pin_memory=torch.cuda.is_available(),
+        persistent_workers=config.data.num_workers > 0,
+    )
+
+
+def autocast_context(device: torch.device, enabled: bool):
+    if device.type == "cuda" and enabled:
+        return torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+    return nullcontext()
+
+
+def train_epoch(model, loader, optimizer, criterion, device, amp: bool) -> float:
+    model.train()
+    loss_sum = 0.0
+    samples = 0
+    for images, targets in tqdm(loader, desc="train", leave=False):
+        images = images.to(device, non_blocking=True)
+        targets = targets.to(device, non_blocking=True)
+        optimizer.zero_grad(set_to_none=True)
+        with autocast_context(device, amp):
+            logits = model(images)
+            loss = criterion(logits, targets)
+        loss.backward()
+        optimizer.step()
+        loss_sum += loss.item() * images.shape[0]
+        samples += images.shape[0]
+    return loss_sum / samples
+
+
+@torch.inference_mode()
+def evaluate(model, loader, criterion, device, config: Config) -> dict[str, object]:
+    model.eval()
+    metrics = SegmentationMetrics(config.data.num_classes, config.data.ignore_index)
+    loss_sum = 0.0
+    samples = 0
+    for images, targets in tqdm(loader, desc="val", leave=False):
+        images = images.to(device, non_blocking=True)
+        targets = targets.to(device, non_blocking=True)
+        with autocast_context(device, config.training.amp):
+            logits = model(images)
+            loss = criterion(logits, targets)
+        metrics.update(logits.argmax(dim=1), targets)
+        loss_sum += loss.item() * images.shape[0]
+        samples += images.shape[0]
+    result = metrics.compute(config.training.exclude_background_from_miou)
+    result["loss"] = loss_sum / samples
+    return result
+
+
+def main() -> None:
+    args = parse_args()
+    config = load_config(args.config)
+    if args.data_root:
+        object.__setattr__(config.data, "root", str(args.data_root))
+    set_seed(config.experiment.seed)
+    run_dir = make_run_dir(config)
+    (run_dir / "config.yaml").write_text(
+        yaml.safe_dump(config.as_dict(), sort_keys=False), encoding="utf-8"
+    )
+    (run_dir / "environment.json").write_text(
+        json.dumps(environment(), indent=2), encoding="utf-8"
+    )
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    processor = AutoImageProcessor.from_pretrained(config.model.backbone)
+    limit_train, limit_val = (32, 16) if args.smoke_test else (None, None)
+    train_set = PlantSegDataset(
+        config.data.root,
+        "train",
+        processor,
+        config.data.image_size,
+        config.data.num_classes,
+        config.data.ignore_index,
+        config.data.metadata_file,
+        augment=True,
+        limit=limit_train,
+    )
+    val_set = PlantSegDataset(
+        config.data.root,
+        "val",
+        processor,
+        config.data.image_size,
+        config.data.num_classes,
+        config.data.ignore_index,
+        config.data.metadata_file,
+        limit=limit_val,
+    )
+    train_loader = make_loader(train_set, config, True)
+    val_loader = make_loader(val_set, config, False)
+    model = DINOv3Segmenter(
+        config.model.backbone,
+        config.data.num_classes,
+        config.model.decoder,
+        config.model.freeze_backbone,
+    ).to(device)
+    trainable = [parameter for parameter in model.parameters() if parameter.requires_grad]
+    optimizer = torch.optim.AdamW(
+        trainable,
+        lr=config.training.learning_rate,
+        weight_decay=config.training.weight_decay,
+    )
+    criterion = nn.CrossEntropyLoss(ignore_index=config.data.ignore_index)
+    best_miou = -1.0
+    metrics_path = run_dir / "metrics.jsonl"
+    epochs = 1 if args.smoke_test else config.training.epochs
+    for epoch in range(1, epochs + 1):
+        train_loss = train_epoch(
+            model, train_loader, optimizer, criterion, device, config.training.amp
+        )
+        validation = evaluate(model, val_loader, criterion, device, config)
+        record = {"epoch": epoch, "train_loss": train_loss, "validation": validation}
+        with metrics_path.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(record) + os.linesep)
+        print(json.dumps(record, ensure_ascii=False))
+        if validation["miou"] > best_miou:
+            best_miou = float(validation["miou"])
+            trainable_state = {
+                name: tensor
+                for name, tensor in model.state_dict().items()
+                if name.startswith("decoder.")
+            }
+            torch.save(
+                {"epoch": epoch, "model": trainable_state, "config": config.as_dict()},
+                run_dir / "best.pt",
+            )
+
+
+if __name__ == "__main__":
+    main()
