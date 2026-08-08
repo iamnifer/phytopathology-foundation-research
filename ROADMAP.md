@@ -13,8 +13,8 @@
 - [x] Воспроизвести полноценный frozen DINOv3 ViT-B/16 linear baseline.
 - [x] Уточнить основной протокол: binary lesion/background.
 - [x] Запустить полный binary ViT-B/16 linear baseline на 10 эпох.
-- [ ] Оценить лучший binary checkpoint на test и отрисовать ошибки.
-- [ ] Сравнить ViT-B/16 с ViT-L/16 при неизменном linear decoder.
+- [x] Оценить лучший binary checkpoint на test и отрисовать ошибки.
+- [x] Сравнить ViT-B/16 с ViT-L/16 при неизменном linear decoder.
 
 ## Затем: качество
 

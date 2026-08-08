@@ -13,6 +13,8 @@
 - Основной протокол уточнён как binary `поражение / фон`. Frozen ViT-B/16
   linear probe после 10 эпох дал `val mean IoU = 0.7391` и
   `val foreground IoU = 0.5944`.
+- Контролируемая замена backbone на frozen ViT-L/16 дала на test
+  `foreground IoU = 0.6112` против `0.6036` у ViT-B/16.
 - Вычислительная ВМ подготовлена: A100 80 GB, 116 GB RAM; веса ViT-B/16 и
   ViT-L/16 получены через ModelScope.
 
@@ -23,6 +25,8 @@
 [docs/infrastructure.md](docs/infrastructure.md).
 Два направления работы и порядок экспериментов собраны в
 [docs/research_plan.md](docs/research_plan.md).
+Результаты масштабирования backbone записаны в
+[docs/experiments/005_dinov3_vitl16_binary_linear.md](docs/experiments/005_dinov3_vitl16_binary_linear.md).
 
 ## Быстрый старт
 
