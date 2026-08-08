@@ -26,6 +26,7 @@ class PlantSegDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
         ignore_index: int = 255,
         metadata_file: str = "Metadatav2.csv",
         augment: bool = False,
+        binary_masks: bool = False,
         limit: int | None = None,
     ) -> None:
         split = split.lower()
@@ -41,6 +42,7 @@ class PlantSegDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
         self.num_classes = num_classes
         self.ignore_index = ignore_index
         self.augment = augment
+        self.binary_masks = binary_masks
 
         metadata_path = self.root / metadata_file
         if not metadata_path.is_file():
@@ -88,6 +90,10 @@ class PlantSegDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
             do_resize=False,
         ).pixel_values.squeeze(0)
         target = torch.from_numpy(np.array(mask, dtype=np.int64, copy=True))
+        if self.binary_masks:
+            ignored = target == self.ignore_index
+            target = (target > 0).to(torch.int64)
+            target[ignored] = self.ignore_index
         valid = target != self.ignore_index
         if valid.any():
             minimum, maximum = int(target[valid].min()), int(target[valid].max())

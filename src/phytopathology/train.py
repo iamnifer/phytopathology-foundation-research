@@ -145,6 +145,7 @@ def main() -> None:
         config.data.ignore_index,
         config.data.metadata_file,
         augment=True,
+        binary_masks=config.data.binary_masks,
         limit=limit_train,
     )
     val_set = PlantSegDataset(
@@ -155,6 +156,7 @@ def main() -> None:
         config.data.num_classes,
         config.data.ignore_index,
         config.data.metadata_file,
+        binary_masks=config.data.binary_masks,
         limit=limit_val,
     )
     train_loader = make_loader(train_set, config, True)

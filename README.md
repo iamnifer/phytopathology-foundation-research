@@ -17,6 +17,8 @@
 Актуальные задачи и критерии готовности находятся в [ROADMAP.md](ROADMAP.md),
 а исходный эксперимент описан в
 [docs/experiments/000_legacy_notebook.md](docs/experiments/000_legacy_notebook.md).
+Параметры подготовленной ВМ и расположение данных записаны в
+[docs/infrastructure.md](docs/infrastructure.md).
 
 ## Быстрый старт
 
@@ -77,6 +79,8 @@ ROADMAP.md               текущая очередь работ
 ## Основные соглашения
 
 - PlantSeg — 116 классов (`0..115`), фон включён; `ignore_index=255`.
+- Постановки разделены явно: основной multiclass-конфиг сохраняет `0..115`,
+  а `configs/dinov3_vitb16_binary_linear.yaml` отображает все болезни в `1`.
 - Основная метрика — dataset-level mIoU, рассчитанная из общей confusion
   matrix. Дополнительно сохраняются pixel accuracy и IoU каждого класса.
 - Изображения и маски читаются по требованию, а не целиком в RAM.

@@ -23,6 +23,7 @@ class DataConfig:
     ignore_index: int = 255
     batch_size: int = 16
     num_workers: int = 8
+    binary_masks: bool = False
 
 
 @dataclass(frozen=True)

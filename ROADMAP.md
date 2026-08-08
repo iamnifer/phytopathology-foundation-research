@@ -10,7 +10,9 @@
 - [x] Скачать PlantSeg v2/v3 на ВМ и проверить split/metadata.
 - [x] Проверить диапазон пиксельных меток PlantSeg v3 (`0..115`).
 - [x] Выполнить smoke test на A100 и сохранить результат как experiment 001.
-- [ ] Воспроизвести полноценный frozen DINOv3 ViT-B/16 baseline.
+- [x] Воспроизвести полноценный frozen DINOv3 ViT-B/16 linear baseline.
+- [ ] Уточнить основной протокол: 116-class или binary lesion/background.
+- [ ] Запустить полный binary baseline после подтверждения протокола.
 
 ## Затем: качество
 
