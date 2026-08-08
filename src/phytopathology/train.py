@@ -20,7 +20,7 @@ from transformers import AutoImageProcessor
 
 from .config import Config, load_config
 from .data import PlantSegDataset
-from .metrics import SegmentationMetrics
+from .metrics import BinaryAveragePrecision, SegmentationMetrics
 from .model import DINOv3Segmenter
 
 
@@ -103,6 +103,11 @@ def train_epoch(model, loader, optimizer, criterion, device, amp: bool) -> float
 def evaluate(model, loader, criterion, device, config: Config) -> dict[str, object]:
     model.eval()
     metrics = SegmentationMetrics(config.data.num_classes, config.data.ignore_index)
+    average_precision = (
+        BinaryAveragePrecision(ignore_index=config.data.ignore_index)
+        if config.data.binary_masks
+        else None
+    )
     loss_sum = 0.0
     samples = 0
     for images, targets in tqdm(loader, desc="val", leave=False):
@@ -112,9 +117,13 @@ def evaluate(model, loader, criterion, device, config: Config) -> dict[str, obje
             logits = model(images)
             loss = criterion(logits, targets)
         metrics.update(logits.argmax(dim=1), targets)
+        if average_precision is not None:
+            average_precision.update(logits.softmax(dim=1)[:, 1], targets)
         loss_sum += loss.item() * images.shape[0]
         samples += images.shape[0]
     result = metrics.compute(config.training.exclude_background_from_miou)
+    if average_precision is not None:
+        result["pixel_average_precision"] = average_precision.compute()
     result["loss"] = loss_sum / samples
     return result
 
@@ -174,7 +183,7 @@ def main() -> None:
         weight_decay=config.training.weight_decay,
     )
     criterion = nn.CrossEntropyLoss(ignore_index=config.data.ignore_index)
-    best_miou = -1.0
+    best_metric = -1.0
     metrics_path = run_dir / "metrics.jsonl"
     epochs = 1 if args.smoke_test else config.training.epochs
     for epoch in range(1, epochs + 1):
@@ -186,8 +195,11 @@ def main() -> None:
         with metrics_path.open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(record) + os.linesep)
         print(json.dumps(record, ensure_ascii=False))
-        if validation["miou"] > best_miou:
-            best_miou = float(validation["miou"])
+        selection_metric = config.training.selection_metric
+        if selection_metric not in validation:
+            raise KeyError(f"Unknown checkpoint selection metric: {selection_metric}")
+        if validation[selection_metric] > best_metric:
+            best_metric = float(validation[selection_metric])
             trainable_state = {
                 name: tensor
                 for name, tensor in model.state_dict().items()

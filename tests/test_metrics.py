@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from phytopathology.metrics import SegmentationMetrics
+from phytopathology.metrics import BinaryAveragePrecision, SegmentationMetrics
 
 
 def test_dataset_level_miou_ignores_absent_classes() -> None:
@@ -29,3 +29,21 @@ def test_background_can_be_excluded() -> None:
     metrics.update(torch.tensor([0, 0, 0]), torch.tensor([0, 0, 1]))
 
     assert metrics.compute(exclude_background=True)["miou"] == pytest.approx(0.0)
+
+
+def test_binary_metrics() -> None:
+    metrics = SegmentationMetrics(num_classes=2)
+    metrics.update(torch.tensor([0, 1, 1, 0]), torch.tensor([0, 1, 0, 1]))
+    result = metrics.compute()
+
+    assert result["foreground_iou"] == pytest.approx(1 / 3)
+    assert result["foreground_dice"] == pytest.approx(0.5)
+    assert result["foreground_precision"] == pytest.approx(0.5)
+    assert result["foreground_recall"] == pytest.approx(0.5)
+
+
+def test_binary_average_precision_is_one_for_perfect_ranking() -> None:
+    metric = BinaryAveragePrecision(bins=10)
+    metric.update(torch.tensor([0.1, 0.9, 0.2, 0.8]), torch.tensor([0, 1, 0, 1]))
+
+    assert metric.compute() == pytest.approx(1.0)

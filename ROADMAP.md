@@ -11,8 +11,10 @@
 - [x] Проверить диапазон пиксельных меток PlantSeg v3 (`0..115`).
 - [x] Выполнить smoke test на A100 и сохранить результат как experiment 001.
 - [x] Воспроизвести полноценный frozen DINOv3 ViT-B/16 linear baseline.
-- [ ] Уточнить основной протокол: 116-class или binary lesion/background.
-- [ ] Запустить полный binary baseline после подтверждения протокола.
+- [x] Уточнить основной протокол: binary lesion/background.
+- [x] Запустить полный binary ViT-B/16 linear baseline на 10 эпох.
+- [ ] Оценить лучший binary checkpoint на test и отрисовать ошибки.
+- [ ] Сравнить ViT-B/16 с ViT-L/16 при неизменном linear decoder.
 
 ## Затем: качество
 
@@ -21,7 +23,10 @@
 - [ ] Настроить AdamW, learning-rate schedule, class weights и crop sampling.
 - [ ] Проверить частичный fine-tuning последних блоков и LoRA/adapters.
 - [ ] Выполнить минимум 3 запуска лучших конфигураций с разными seeds.
-- [ ] Зафиксировать mean/std и per-class IoU; целевая метрика — 0.70 mIoU.
+- [x] Добавить foreground IoU, Dice, precision/recall и pixel AP.
+- [x] Добавить выбор и отрисовку лучших/типичных/худших binary predictions.
+- [ ] Уточнить у руководителя, означает ли `mAP` pixel AP или COCO mask AP.
+- [ ] Зафиксировать mean/std; целевая binary-метрика — около 0.70.
 
 ## Затем: few-shot
 

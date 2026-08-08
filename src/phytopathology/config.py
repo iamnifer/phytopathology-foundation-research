@@ -40,6 +40,7 @@ class TrainingConfig:
     weight_decay: float = 1e-4
     amp: bool = True
     exclude_background_from_miou: bool = False
+    selection_metric: str = "miou"
 
 
 @dataclass(frozen=True)
