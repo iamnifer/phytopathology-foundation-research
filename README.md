@@ -15,6 +15,8 @@
   `val foreground IoU = 0.5944`.
 - Контролируемая замена backbone на frozen ViT-L/16 дала на test
   `foreground IoU = 0.6112` против `0.6036` у ViT-B/16.
+- Простая convolutional head на ViT-B/16 оказалась заметно сильнее:
+  `test foreground IoU = 0.6488`, Dice `0.7870`, pixel AP `0.8763`.
 - Вычислительная ВМ подготовлена: A100 80 GB, 116 GB RAM; веса ViT-B/16 и
   ViT-L/16 получены через ModelScope.
 
@@ -27,6 +29,8 @@
 [docs/research_plan.md](docs/research_plan.md).
 Результаты масштабирования backbone записаны в
 [docs/experiments/005_dinov3_vitl16_binary_linear.md](docs/experiments/005_dinov3_vitl16_binary_linear.md).
+Сравнение decoder heads записано в
+[docs/experiments/006_dinov3_vitb16_binary_conv.md](docs/experiments/006_dinov3_vitb16_binary_conv.md).
 
 ## Быстрый старт
 

@@ -18,7 +18,7 @@
 
 ## Затем: качество
 
-- [ ] Сравнить linear probe и convolutional head при одном протоколе.
+- [x] Сравнить linear probe и convolutional head при одном протоколе.
 - [ ] Добавить multi-layer decoder (4 промежуточных слоя DINOv3).
 - [ ] Настроить AdamW, learning-rate schedule, class weights и crop sampling.
 - [ ] Проверить частичный fine-tuning последних блоков и LoRA/adapters.
