@@ -79,6 +79,7 @@ plantsegv3/
 configs/                 параметры воспроизводимых запусков
 docs/experiments/        зафиксированные результаты и выводы
 notebooks/               только exploration и визуальный анализ
+report/                  LaTeX-исходники курсовой работы
 src/phytopathology/      dataset, модель, метрики и training CLI
 tests/                   быстрые тесты без скачивания весов и датасета
 ROADMAP.md               текущая очередь работ
