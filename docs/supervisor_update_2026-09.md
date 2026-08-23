@@ -10,8 +10,9 @@ seed, историю и checkpoint. Главная метрика — disease/fo
 
 Лучший текущий результат на validation: **foreground IoU 0.6569**, mean IoU
 0.7765, Dice 0.7929. Это frozen DINOv3 ViT-B/16, convolutional decoder по
-промежуточным слоям 3/6/9/12, 30 эпох, AdamW и cosine LR decay. Результат пока
-получен на одном seed; test для нового кандидата не использовался.
+промежуточным слоям 3/6/9/12, 30 эпох, AdamW и cosine LR decay. По seed
+42/43/44 получено **0.6519 ± 0.0062** foreground IoU. Test для нового кандидата
+не использовался.
 
 ## Что проверено
 
@@ -23,7 +24,8 @@ seed, историю и checkpoint. Главная метрика — disease/fo
 | + aspect-preserving padding | 0.6231 |
 | + padding и moderate spatial/color aug | 0.6248 |
 | 4 DINO layers + conv, 10 epochs | 0.6357 |
-| **4 DINO layers + conv, 30 epochs + cosine** | **0.6569** |
+| **4 DINO layers + conv, 30 epochs + cosine** | **0.6519 ± 0.0062** |
+| Last DINO layer + conv, 30 epochs + cosine (seed 42) | 0.6438 |
 
 Для первых трёх заранее зафиксированных baseline есть test: ViT-B linear
 0.6036, ViT-L linear 0.6112, ViT-B conv 0.6488 foreground IoU. Последующие
@@ -62,13 +64,16 @@ decoder поднял эти значения до 0.383 и 0.769 соответ�
 
 ## Предлагаемый следующий шаг
 
-1. Повторить лучшую конфигурацию на seeds 43 и 44 и получить mean ± std.
-2. Если эффект устойчив, проверить одну lesion-aware гипотезу: oversampling/
+1. Повторить длительный single-layer control на seeds 43 и 44, чтобы оценить
+   архитектурный эффект не по одному seed.
+2. Проверить одну lesion-aware гипотезу: oversampling/
    crop sampling с малыми foreground masks либо foreground-aware Dice/Focal
    component. Выбрать один фактор, не смешивать их в первом запуске.
 3. После этого рассмотреть partial fine-tuning последних 1–2 DINO blocks.
 4. Один раз оценить финального победителя на test и обновить текст курсовой.
-5. Отдельно уточнить, под `mAP` требуется pixel AP или COCO-style mask AP.
+5. Согласовать формальную тему с фактической постановкой: утверждённое название
+   говорит о классификации, CNN и domain adaptation, а текущие эксперименты — о
+   сегментации DINOv3/SAM и эффективности пиксельной разметки.
 
 После стабилизации supervised baseline можно переходить к второй линии —
 минимизации разметки: random subset, k-means/k-medoids по embeddings и farthest

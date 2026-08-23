@@ -5,6 +5,13 @@ segmentation with DINOv3 and PlantSeg. Read `README.md`, `ROADMAP.md`,
 `docs/research_plan.md`, and `docs/colleague_experiments_review.md` before making
 research decisions. Record every completed run in `docs/experiments/`.
 
+The official title supplied by the student is “Сравнение архитектур CNN и
+трансформеров для классификации заболеваний растений с применением трансферного
+обучения и адаптации доменов”. This currently conflicts with the experimental
+task (semantic segmentation, DINOv3/SAM, label efficiency). Do not silently
+reinterpret either side; resolve whether the title is immutable before adding a
+classification or domain-adaptation track.
+
 The current research goal is to study the quality/annotation-budget trade-off
 when adapting DINOv3 and SAM to binary plant-lesion segmentation. The final
 work must connect two lines: (A) DINOv3/SAM adaptation quality and (B) training
@@ -38,7 +45,11 @@ All values below use 384×384 stretched inputs unless explicitly noted.
   0.6362 vs 0.6345 at 0.50, too small to justify test reuse.
 - Frozen ViT-B/16, layers 3/6/9/12 + conv decoder, 30-epoch cosine schedule:
   validation foreground IoU 0.6569 (epoch 25), mean IoU 0.7765, Dice 0.7929,
-  precision 0.7713, recall 0.8158, AP 0.8723. Seed 42 only; test not evaluated.
+  precision 0.7713, recall 0.8158, AP 0.8723. Across seeds 42/43/44, foreground
+  IoU is 0.6519 ± 0.0062 (sample SD); test not evaluated.
+- Matched last-layer convolutional decoder with the same 30-epoch cosine recipe
+  gives 0.6438 foreground IoU on seed 42. The matched multi-layer gain is 0.0131,
+  but last-layer seeds 43/44 are still required for a statistical comparison.
 - Exploratory multiclass ViT-B linear test mIoU: 0.3902. The notebook's saved
   `0.4575` is stale/inconsistent and must not be presented as verified.
 
@@ -66,9 +77,9 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
 
 ## Current experiment queue
 
-1. Finish the running controlled series: multi-layer cosine seeds 43/44 and a
-   seed-42 single-layer convolutional decoder with the same 30-epoch cosine
-   schedule. Report mean ± std and isolate architecture from schedule length.
+1. Run single-layer cosine controls for seeds 43/44; the multi-layer three-seed
+   result and seed-42 matched control are complete and documented in
+   `docs/experiments/2026-09-14_decoder_controlled_series.md`.
 2. Test one lesion-aware intervention because Q1 small-mask macro IoU remains
    0.3832 vs 0.7687 for Q4: crop/oversampling first, then a loss ablation.
 3. Benchmark frozen SAM separately for oracle point/box prompts and automatic

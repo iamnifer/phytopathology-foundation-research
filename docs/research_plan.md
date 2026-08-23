@@ -44,8 +44,10 @@
 Текущий лучший результат смешивает два изменения: multi-layer features и
 30-эпоховый cosine schedule. Поэтому обязательны:
 
-1. повторы multi-layer + cosine для seed 43 и 44;
-2. single-layer convolutional decoder + тот же 30-эпоховый cosine schedule;
+1. ~~повторы multi-layer + cosine для seed 43 и 44~~ — выполнено, итог по трём
+   seed: $0.6519\pm0.0062$ disease IoU;
+2. single-layer convolutional decoder + тот же 30-эпоховый cosine schedule —
+   seed 42 выполнен (0.6438 против 0.6569); нужны seed 43 и 44;
 3. если разница устойчива — один lesion-aware метод (crop/oversampling либо
    Dice/Focal-компонента), мотивированный слабым Q1 small-lesion IoU;
 4. частичное размораживание последних 1–2 ViT blocks с отдельным малым LR;
