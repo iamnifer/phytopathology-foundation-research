@@ -14,7 +14,7 @@ import numpy as np
 import torch
 import yaml
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
 from tqdm import tqdm
 from transformers import AutoImageProcessor
 
@@ -65,11 +65,46 @@ def environment() -> dict[str, object]:
     }
 
 
+def small_lesion_sampling_weights(
+    foreground_fractions: np.ndarray, quantile: float, factor: float
+) -> tuple[torch.Tensor, float]:
+    if not 0.0 < quantile < 1.0:
+        raise ValueError("small_lesion_quantile must lie strictly between 0 and 1")
+    if factor < 1.0:
+        raise ValueError("small_lesion_factor must be at least 1")
+    positive = foreground_fractions[foreground_fractions > 0]
+    if positive.size == 0:
+        raise ValueError("small-lesion sampling requires at least one foreground mask")
+    threshold = float(np.quantile(positive, quantile))
+    weights = np.ones(len(foreground_fractions), dtype=np.float64)
+    small = (foreground_fractions > 0) & (foreground_fractions <= threshold)
+    weights[small] = factor
+    return torch.as_tensor(weights, dtype=torch.double), threshold
+
+
 def make_loader(dataset, config: Config, shuffle: bool) -> DataLoader:
+    sampler = None
+    if shuffle and config.data.sampling == "small_lesion_oversample":
+        weights, _ = small_lesion_sampling_weights(
+            dataset.foreground_fractions(),
+            config.data.small_lesion_quantile,
+            config.data.small_lesion_factor,
+        )
+        generator = torch.Generator().manual_seed(config.experiment.seed)
+        sampler = WeightedRandomSampler(
+            weights,
+            num_samples=len(dataset),
+            replacement=True,
+            generator=generator,
+        )
+        shuffle = False
+    elif shuffle and config.data.sampling != "shuffle":
+        raise ValueError("data.sampling must be 'shuffle' or 'small_lesion_oversample'")
     return DataLoader(
         dataset,
         batch_size=config.data.batch_size,
         shuffle=shuffle,
+        sampler=sampler,
         num_workers=config.data.num_workers,
         pin_memory=torch.cuda.is_available(),
         persistent_workers=config.data.num_workers > 0,
@@ -174,6 +209,23 @@ def main() -> None:
         resize_mode=config.data.resize_mode,
         limit=limit_val,
     )
+    if config.data.sampling == "small_lesion_oversample":
+        fractions = train_set.foreground_fractions()
+        weights, threshold = small_lesion_sampling_weights(
+            fractions,
+            config.data.small_lesion_quantile,
+            config.data.small_lesion_factor,
+        )
+        sampling_summary = {
+            "method": config.data.sampling,
+            "foreground_fraction_threshold": threshold,
+            "small_images": int((weights > 1).sum()),
+            "total_images": len(train_set),
+            "oversample_factor": config.data.small_lesion_factor,
+        }
+        (run_dir / "sampling.json").write_text(
+            json.dumps(sampling_summary, indent=2), encoding="utf-8"
+        )
     train_loader = make_loader(train_set, config, True)
     val_loader = make_loader(val_set, config, False)
     model = DINOv3Segmenter(

@@ -26,6 +26,9 @@ class DataConfig:
     binary_masks: bool = False
     resize_mode: str = "stretch"
     augmentation: str = "horizontal_flip"
+    sampling: str = "shuffle"
+    small_lesion_quantile: float = 0.25
+    small_lesion_factor: float = 2.0
 
 
 @dataclass(frozen=True)

@@ -5,12 +5,13 @@ segmentation with DINOv3 and PlantSeg. Read `README.md`, `ROADMAP.md`,
 `docs/research_plan.md`, and `docs/colleague_experiments_review.md` before making
 research decisions. Record every completed run in `docs/experiments/`.
 
-The official title supplied by the student is “Сравнение архитектур CNN и
-трансформеров для классификации заболеваний растений с применением трансферного
-обучения и адаптации доменов”. This currently conflicts with the experimental
-task (semantic segmentation, DINOv3/SAM, label efficiency). Do not silently
-reinterpret either side; resolve whether the title is immutable before adding a
-classification or domain-adaptation track.
+The official, immutable title supplied by the student is “Сравнение архитектур
+CNN и трансформеров для классификации заболеваний растений с применением
+трансферного обучения и адаптации доменов”. It is a broad formal umbrella:
+semantic segmentation may be treated as pixel classification. Follow the
+supervisor's directions—DINO/SAM adaptation quality and data minimization—rather
+than adding a separate image-classification track merely to mirror every word.
+The final report deadline is 2026-09-18 23:59 Europe/Moscow.
 
 The current research goal is to study the quality/annotation-budget trade-off
 when adapting DINOv3 and SAM to binary plant-lesion segmentation. The final

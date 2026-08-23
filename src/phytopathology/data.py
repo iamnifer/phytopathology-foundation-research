@@ -127,6 +127,7 @@ class PlantSegDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
         self.binary_masks = binary_masks
         self.resize_mode = resize_mode
         self.augmentation = augmentation
+        self._foreground_fractions: np.ndarray | None = None
 
         metadata_path = self.root / metadata_file
         if not metadata_path.is_file():
@@ -151,6 +152,23 @@ class PlantSegDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
 
     def __len__(self) -> int:
         return len(self.samples)
+
+    def foreground_fractions(self) -> np.ndarray:
+        """Return foreground fractions in original masks, excluding ignored pixels."""
+        if not self.binary_masks:
+            raise ValueError("foreground fractions are defined only for binary masks")
+        if self._foreground_fractions is None:
+            fractions = []
+            for _, mask_name in self.samples:
+                mask_path = self.mask_dir / str(mask_name)
+                with Image.open(mask_path) as source:
+                    target = np.asarray(source.convert("L"))
+                valid = target != self.ignore_index
+                valid_count = int(valid.sum())
+                fraction = float(((target > 0) & valid).sum() / valid_count) if valid_count else 0.0
+                fractions.append(fraction)
+            self._foreground_fractions = np.asarray(fractions, dtype=np.float64)
+        return self._foreground_fractions.copy()
 
     def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
         image_name, mask_name = self.samples[index]
