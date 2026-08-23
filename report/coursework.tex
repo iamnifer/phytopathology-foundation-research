@@ -3,9 +3,11 @@
 \usepackage{geometry}
 \geometry{left=2.5cm,right=1cm,top=2cm,bottom=2cm}
 \usepackage{fontspec}
-\setmainfont{Liberation Serif}
-\setsansfont{Liberation Sans}
-\setmonofont{Liberation Mono}
+% Старый промежуточный отчёт использовал стандартное семейство Computer Modern.
+% CMU сохраняет его начертание и полноценно поддерживает кириллицу в XeLaTeX.
+\setmainfont{CMU Serif}
+\setsansfont{CMU Sans Serif}
+\setmonofont{CMU Typewriter Text}
 \usepackage[english,russian]{babel}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
