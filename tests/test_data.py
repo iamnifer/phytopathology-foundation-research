@@ -1,8 +1,10 @@
 import numpy as np
+import pandas as pd
 import pytest
 from PIL import Image
 
 from phytopathology.data import resize_pair
+from phytopathology.select_subsets import random_order, stratified_order
 from phytopathology.train import small_lesion_sampling_weights
 
 
@@ -38,3 +40,16 @@ def test_small_lesion_sampling_rejects_invalid_parameters() -> None:
         small_lesion_sampling_weights(fractions, 1.0, 2.0)
     with pytest.raises(ValueError, match="factor"):
         small_lesion_sampling_weights(fractions, 0.25, 0.5)
+
+
+def test_subset_orders_are_reproducible_and_stratified() -> None:
+    names = np.array(["a", "b", "c", "d", "e", "f"])
+    metadata = pd.DataFrame(
+        {"Name": names, "Disease": ["x", "x", "x", "y", "y", "y"]}
+    )
+
+    assert np.array_equal(random_order(6, 42), random_order(6, 42))
+    order = stratified_order(names, metadata, 42)
+
+    assert set(order[:2]) & {0, 1, 2}
+    assert set(order[:2]) & {3, 4, 5}

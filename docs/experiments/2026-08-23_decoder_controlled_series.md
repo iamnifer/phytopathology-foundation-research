@@ -22,22 +22,24 @@ and does it remain when training duration and cosine scheduling are controlled?
 | `20260914T110651Z_dinov3_vitb16_binary_multilayer_conv_cosine` | 43 | blocks 3/6/9/12 | 25 | 0.6538 | 0.7762 | 0.8754 |
 | `20260914T112340Z_dinov3_vitb16_binary_multilayer_conv_cosine` | 44 | blocks 3/6/9/12 | 23 | 0.6450 | 0.7705 | 0.8714 |
 | `20260914T114031Z_dinov3_vitb16_binary_conv_cosine` | 42 | last block | 23 | 0.6438 | 0.7703 | 0.8658 |
+| `20260914T122404Z_dinov3_vitb16_binary_conv_cosine` | 43 | last block | 28 | 0.6442 | 0.7705 | 0.8667 |
+| `20260914T124601Z_dinov3_vitb16_binary_conv_cosine` | 44 | last block | 21 | 0.6451 | 0.7698 | 0.8646 |
 
 For the multi-layer decoder, mean disease IoU over seeds 42/43/44 is
-**0.6519 ± 0.0062** (sample standard deviation). On the matched seed 42, the
-multi-layer decoder exceeds the last-layer control by 0.0131 absolute IoU.
+**0.6519 ± 0.0062** (sample standard deviation); for the last-layer decoder it
+is **0.6444 ± 0.0007**. The paired difference is **0.0075 ± 0.0069**.
 
 ## Interpretation
 
-The strong multi-layer run was not a one-seed accident: all three runs lie in
-the 0.6450–0.6569 range. The matched seed-42 control also indicates that the
-gain is not explained only by the longer cosine schedule. However, decoder
-architecture has not yet been compared statistically because the single-layer
-control has only one seed. Seeds 43 and 44 for that control are needed before
-claiming a robust architectural advantage.
+Multi-layer features improve the three-seed mean, so the best seed-42 result is
+not explained only by the longer cosine schedule. The effect is nevertheless
+small relative to its variability: the paired improvement is 0.0131, 0.0096
+and -0.0001 on seeds 42, 43 and 44. The defensible conclusion is a modest mean
+gain with no evidence of a uniformly better result on every seed, rather than
+a decisive architectural advantage.
 
 ## Artifacts
 
 Resolved configs, environment snapshots, metrics histories and decoder
 checkpoints are stored under the corresponding names in the gitignored `runs/`
-directory. The three new runs are backed up both locally and on the research VM.
+directory. All runs are backed up both locally and on the research VM.

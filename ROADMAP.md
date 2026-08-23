@@ -24,33 +24,35 @@
 - [x] Проверить validation-only threshold calibration.
 - [x] Сравнить stretch, aspect-preserving pad и умеренные аугментации.
 - [x] Завершить 30-эпоховый multi-layer run с cosine schedule (`val fg IoU 0.6569`).
-- [ ] Повторить multi-layer + cosine на seeds 43 и 44.
-- [ ] Запустить single-layer conv с тем же 30-эпоховым cosine schedule как
+- [x] Повторить multi-layer + cosine на seeds 43 и 44.
+- [x] Запустить single-layer conv с тем же 30-эпоховым cosine schedule как
       обязательный контроль.
-- [ ] Проверить lesion-aware crop sampling / foreground-aware loss для малых масок.
+- [x] Проверить image-level lesion-aware oversampling; результат отрицательный.
+- [ ] Проверить foreground-centred crop / foreground-aware loss только после
+      основной серии эффективности данных.
 - [ ] Проверить частичный fine-tuning последних 1–2 DINOv3 blocks.
-- [ ] Выполнить минимум 3 запуска лучших конфигураций с разными seeds.
+- [x] Выполнить минимум 3 запуска DINO decoder-конфигураций с разными seeds.
 - [x] Добавить foreground IoU, Dice, precision/recall и pixel AP.
 - [x] Добавить выбор и отрисовку лучших/типичных/худших binary predictions.
 - [x] Зафиксировать точное название текущей метрики: foreground pixel AP, не
       COCO mask AP.
-- [ ] Зафиксировать mean/std; ориентир 0.70 не использовать для выбора по test.
+- [x] Зафиксировать mean/std; ориентир 0.70 не использовать для выбора по test.
 
 ## Затем: эффективность разметки
 
 - [x] Зафиксировать основную единицу бюджета: полностью размеченное изображение.
-- [ ] Добавить фиксированный optimizer-step budget для сравнения подмножеств.
-- [ ] Извлечь и закешировать DINOv3 image descriptors из patch embeddings.
-- [ ] Random sampling baseline.
-- [ ] Stratified random baseline по бесплатным image-level metadata.
+- [x] Добавить фиксированный optimizer-step budget для сравнения подмножеств.
+- [x] Извлечь и закешировать DINOv3 image descriptors из patch embeddings.
+- [x] Подготовить nested random sampling subsets.
+- [x] Подготовить nested stratified random subsets по image-level metadata.
 - [ ] k-means representatives / k-medoids.
-- [ ] Farthest-first / greedy k-center.
+- [x] Подготовить nested farthest-first / greedy k-center subsets.
 - [ ] Гибрид uncertainty + diversity после cold start.
 - [ ] Кривые качества для 1/5/10/25/50/100% train, mean ± std.
 
 ## Отдельные ветки исследования
 
-- [ ] Vanilla SAM: oracle point/box promptability benchmark.
+- [x] Vanilla SAM: oracle point/box promptability benchmark.
 - [ ] Автоматические DINO→SAM prompts без GT.
 - [ ] SAM mask-decoder fine-tuning; adapter/LoRA только как второй этап.
 - [x] Визуализация ошибок и анализ качества по размеру поражения/болезни.
@@ -65,9 +67,9 @@ per-class IoU, лучший checkpoint и короткий вывод в `docs/e
 
 ## Текущий исследовательский вывод
 
-После обзора всех веток репозитория коллеги и validation-диагностики основной
-приоритет — качество малых поражений. Нижний квартиль размера GT-маски имеет
-macro foreground IoU `0.3247`, верхний — `0.7469`. Простое масштабирование
-backbone, padding и threshold tuning эту проблему не адресуют. Следующая серия
-после cosine-контроля должна проверять sampling/loss и spatial decoder, сохраняя
-test закрытым до выбора финальной конфигурации.
+Multi-layer decoder имеет небольшой, но нестабильный средний выигрыш над
+single-layer (`+0.0075 ± 0.0069` в парном сравнении). Image-level oversampling
+малых масок не помог даже Q1, а oracle box для frozen SAM дал только `0.4659`
+disease IoU. Основной приоритет теперь — запустить сопоставимые кривые качества
+random/stratified/farthest-first при фиксированном числе шагов, сохраняя test
+закрытым до выбора финальной конфигурации.

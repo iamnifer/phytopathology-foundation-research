@@ -25,7 +25,8 @@ seed, историю и checkpoint. Главная метрика — disease/fo
 | + padding и moderate spatial/color aug | 0.6248 |
 | 4 DINO layers + conv, 10 epochs | 0.6357 |
 | **4 DINO layers + conv, 30 epochs + cosine** | **0.6519 ± 0.0062** |
-| Last DINO layer + conv, 30 epochs + cosine (seed 42) | 0.6438 |
+| Last DINO layer + conv, 30 epochs + cosine | 0.6444 ± 0.0007 |
+| + small-lesion image oversampling (seed 42) | 0.6498 |
 
 Для первых трёх заранее зафиксированных baseline есть test: ViT-B linear
 0.6036, ViT-L linear 0.6112, ViT-B conv 0.6488 foreground IoU. Последующие
@@ -62,18 +63,25 @@ decoder поднял эти значения до 0.383 и 0.769 соответ�
 Таким образом, основной оставшийся failure mode — малые поражения, а не общая
 нехватка ёмкости frozen backbone.
 
+Простое удвоение частоты train-изображений из нижнего квартиля не помогло: Q1
+IoU снизился 0.383→0.365, а общий disease IoU 0.6569→0.6498. Повторять этот
+вариант нецелесообразно.
+
+## Vanilla SAM
+
+На всех 1247 validation-изображениях frozen SAM ViT-B с одной oracle-точкой
+дал disease IoU 0.3624, а с точным GT box — 0.4659. Даже box имеет высокий
+recall 0.8835, но precision лишь 0.4964. Это показывает, что умение SAM
+очертить подсказанный объект не заменяет адаптацию к семантике поражения.
+
 ## Предлагаемый следующий шаг
 
-1. Повторить длительный single-layer control на seeds 43 и 44, чтобы оценить
-   архитектурный эффект не по одному seed.
-2. Проверить одну lesion-aware гипотезу: oversampling/
-   crop sampling с малыми foreground masks либо foreground-aware Dice/Focal
-   component. Выбрать один фактор, не смешивать их в первом запуске.
-3. После этого рассмотреть partial fine-tuning последних 1–2 DINO blocks.
-4. Один раз оценить финального победителя на test и обновить текст курсовой.
-5. Согласовать формальную тему с фактической постановкой: утверждённое название
-   говорит о классификации, CNN и domain adaptation, а текущие эксперименты — о
-   сегментации DINOv3/SAM и эффективности пиксельной разметки.
+1. Построить label-efficiency curves: random, stratified random и
+   representation-based selection по frozen DINOv3 embeddings.
+2. Проверить автоматические DINO→SAM prompts отдельно от oracle режима.
+3. Обучить SAM mask decoder в одном зафиксированном режиме.
+4. Рассматривать partial DINO fine-tuning только после основных кривых данных.
+5. Один раз оценить финальных победителей на test и обновить текст курсовой.
 
 После стабилизации supervised baseline можно переходить к второй линии —
 минимизации разметки: random subset, k-means/k-medoids по embeddings и farthest

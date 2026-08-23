@@ -12,6 +12,8 @@ data/
 models/
 runs/
 logs/
+features/
+subsets/
 *.pth
 *.pt
 *.ckpt

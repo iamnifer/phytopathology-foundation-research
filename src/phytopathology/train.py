@@ -29,6 +29,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--data-root", type=Path, help="Override data.root from YAML")
     parser.add_argument("--seed", type=int, help="Override experiment.seed from YAML")
+    parser.add_argument("--subset-file", type=Path, help="Override data.subset_file")
+    parser.add_argument("--epoch-samples", type=int, help="Override data.epoch_samples")
     parser.add_argument("--smoke-test", action="store_true", help="Use 32 train and 16 val samples")
     return parser.parse_args()
 
@@ -93,13 +95,22 @@ def make_loader(dataset, config: Config, shuffle: bool) -> DataLoader:
         generator = torch.Generator().manual_seed(config.experiment.seed)
         sampler = WeightedRandomSampler(
             weights,
-            num_samples=len(dataset),
+            num_samples=config.data.epoch_samples or len(dataset),
             replacement=True,
             generator=generator,
         )
         shuffle = False
     elif shuffle and config.data.sampling != "shuffle":
         raise ValueError("data.sampling must be 'shuffle' or 'small_lesion_oversample'")
+    elif shuffle and config.data.epoch_samples is not None:
+        generator = torch.Generator().manual_seed(config.experiment.seed)
+        sampler = WeightedRandomSampler(
+            torch.ones(len(dataset), dtype=torch.double),
+            num_samples=config.data.epoch_samples,
+            replacement=config.data.epoch_samples > len(dataset),
+            generator=generator,
+        )
+        shuffle = False
     return DataLoader(
         dataset,
         batch_size=config.data.batch_size,
@@ -171,6 +182,15 @@ def main() -> None:
         object.__setattr__(config.data, "root", str(args.data_root))
     if args.seed is not None:
         object.__setattr__(config.experiment, "seed", args.seed)
+    if args.subset_file is not None:
+        object.__setattr__(config.data, "subset_file", str(args.subset_file))
+        object.__setattr__(
+            config.experiment,
+            "name",
+            f"{config.experiment.name}_{args.subset_file.stem}",
+        )
+    if args.epoch_samples is not None:
+        object.__setattr__(config.data, "epoch_samples", args.epoch_samples)
     set_seed(config.experiment.seed)
     run_dir = make_run_dir(config)
     (run_dir / "config.yaml").write_text(
@@ -195,6 +215,7 @@ def main() -> None:
         binary_masks=config.data.binary_masks,
         resize_mode=config.data.resize_mode,
         augmentation=config.data.augmentation,
+        subset_file=config.data.subset_file,
         limit=limit_train,
     )
     val_set = PlantSegDataset(

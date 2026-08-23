@@ -90,6 +90,21 @@ Seed YAML-конфигурации можно переопределить бе�
 python -m phytopathology.train --config configs/example.yaml --seed 43
 ```
 
+Для экспериментов с бюджетом разметки сначала кэшируются frozen-признаки и
+создаются точные manifests подмножеств:
+
+```bash
+python -m phytopathology.extract_descriptors --config configs/example.yaml \
+  --output features/train.npz
+python -m phytopathology.select_subsets --features features/train.npz \
+  --metadata data/plantseg_v3/Metadatav2.csv --output-dir subsets/seed42
+python -m phytopathology.train --config configs/example.yaml \
+  --subset-file subsets/seed42/farthest_seed42_0.1.json --epoch-samples 7916
+```
+
+`--epoch-samples` сохраняет одинаковое число optimizer steps на эпоху для
+полной выборки и её подмножеств.
+
 Каждый запуск создаёт отдельный каталог в `runs/`: resolved-конфиг,
 информацию об окружении, метрики JSONL и лучший checkpoint. `runs/` не хранится
 в Git; итоговые числа и выводы переносятся в `docs/experiments/`.

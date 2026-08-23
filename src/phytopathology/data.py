@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import random
 from pathlib import Path
 
@@ -109,6 +110,7 @@ class PlantSegDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
         binary_masks: bool = False,
         resize_mode: str = "stretch",
         augmentation: str = "horizontal_flip",
+        subset_file: str | Path | None = None,
         limit: int | None = None,
     ) -> None:
         split = split.lower()
@@ -138,6 +140,21 @@ class PlantSegDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
         if missing:
             raise ValueError(f"Missing metadata columns: {sorted(missing)}")
         frame = frame[frame["Split"] == self.SPLIT_NAMES[split]].reset_index(drop=True)
+        if subset_file is not None:
+            if split != "train":
+                raise ValueError("subset_file may only be used for the training split")
+            manifest = json.loads(Path(subset_file).read_text(encoding="utf-8"))
+            selected_names = manifest["samples"]
+            if len(selected_names) != len(set(selected_names)):
+                raise ValueError("subset manifest contains duplicate sample names")
+            available = set(frame["Name"].astype(str))
+            missing_names = set(selected_names).difference(available)
+            if missing_names:
+                raise ValueError(f"subset contains unknown samples: {sorted(missing_names)[:5]}")
+            order = {name: index for index, name in enumerate(selected_names)}
+            frame = frame[frame["Name"].isin(selected_names)].copy()
+            frame["_subset_order"] = frame["Name"].map(order)
+            frame = frame.sort_values("_subset_order").reset_index(drop=True)
         if limit is not None:
             frame = frame.iloc[:limit].copy()
         if frame.empty:

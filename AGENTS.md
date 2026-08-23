@@ -49,8 +49,16 @@ All values below use 384×384 stretched inputs unless explicitly noted.
   precision 0.7713, recall 0.8158, AP 0.8723. Across seeds 42/43/44, foreground
   IoU is 0.6519 ± 0.0062 (sample SD); test not evaluated.
 - Matched last-layer convolutional decoder with the same 30-epoch cosine recipe
-  gives 0.6438 foreground IoU on seed 42. The matched multi-layer gain is 0.0131,
-  but last-layer seeds 43/44 are still required for a statistical comparison.
+  gives 0.6444 ± 0.0007 over three seeds. The paired multi-layer difference is
+  0.0075 ± 0.0069 and vanishes on seed 44; describe it as a modest, variable
+  mean gain rather than a decisive win.
+- Doubling the sampling weight of the smallest-mask train quartile is negative:
+  seed-42 disease IoU 0.6498 vs 0.6569, Q1 macro IoU 0.3649 vs 0.3832. Do not
+  repeat this image-level oversampling recipe.
+- Frozen SAM ViT-B oracle promptability on all 1247 validation images: one
+  positive point gives disease IoU 0.3624; exact GT box gives 0.4659. Box recall
+  is 0.8835 but precision 0.4964. These are upper-bound diagnostics, not
+  automatic segmentation results.
 - Exploratory multiclass ViT-B linear test mIoU: 0.3902. The notebook's saved
   `0.4575` is stale/inconsistent and must not be presented as verified.
 
@@ -78,18 +86,12 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
 
 ## Current experiment queue
 
-1. Run single-layer cosine controls for seeds 43/44; the multi-layer three-seed
-   result and seed-42 matched control are complete and documented in
-   `docs/experiments/2026-09-14_decoder_controlled_series.md`.
-2. Test one lesion-aware intervention because Q1 small-mask macro IoU remains
-   0.3832 vs 0.7687 for Q4: crop/oversampling first, then a loss ablation.
-3. Benchmark frozen SAM separately for oracle point/box prompts and automatic
-   prompts derived from DINO predictions; never present oracle prompts as an
-   automatic baseline. Then train the SAM mask decoder.
-4. Extract cached DINOv3 image descriptors and evaluate random, stratified
+1. Extract cached DINOv3 image descriptors and evaluate random, stratified
    random, cluster representatives and farthest-first selection at
    1/5/10/25/50/100% label budgets with fixed optimizer-step rules.
-5. Only after the above, test uncertainty+diversity and partial backbone
+2. Evaluate automatic prompts derived from DINO predictions separately from the
+   completed oracle SAM benchmark; then train the SAM mask decoder once.
+3. Only after the above, test uncertainty+diversity and partial backbone
    unfreezing. Evaluate finalized winners once on test.
 
 ## Important findings and pitfalls

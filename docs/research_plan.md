@@ -46,10 +46,10 @@
 
 1. ~~повторы multi-layer + cosine для seed 43 и 44~~ — выполнено, итог по трём
    seed: $0.6519\pm0.0062$ disease IoU;
-2. single-layer convolutional decoder + тот же 30-эпоховый cosine schedule —
-   seed 42 выполнен (0.6438 против 0.6569); нужны seed 43 и 44;
-3. если разница устойчива — один lesion-aware метод (crop/oversampling либо
-   Dice/Focal-компонента), мотивированный слабым Q1 small-lesion IoU;
+2. ~~single-layer convolutional decoder + тот же 30-эпоховый cosine schedule~~
+   — выполнено: $0.6444\pm0.0007$ против $0.6519\pm0.0062$ у multi-layer;
+3. ~~один lesion-aware метод~~ — image-level oversampling дал отрицательный
+   результат; не повторять, возможный follow-up только foreground crop/loss;
 4. частичное размораживание последних 1–2 ViT blocks с отдельным малым LR;
 5. перенос только финального рецепта на ViT-L/16.
 
@@ -61,8 +61,9 @@
 SAM является promptable, а не disease-aware моделью. Сравниваются три разных
 режима, которые должны находиться в разных строках таблицы:
 
-1. **Oracle promptability:** positive point, points ± и bounding box из GT.
-   Это верхняя диагностическая оценка, а не автоматическая сегментация.
+1. **Oracle promptability:** positive point и bounding box из GT выполнены;
+   получено 0.3624 и 0.4659 disease IoU. Это верхняя диагностическая оценка, а
+   не автоматическая сегментация.
 2. **Automatic refinement:** box/points извлекаются из coarse DINOv3 mask без
    использования validation/test GT.
 3. **Adaptation:** обучение mask decoder; затем, только если оправдано,
@@ -126,11 +127,10 @@ masks или DINOv3 clustering не превосходит random. Числов�
 
 ## Порядок выполнения
 
-1. Seeds 43/44 и single-layer cosine control.
-2. Один lesion-aware DINOv3 experiment; затем принять решение о partial
-   fine-tuning.
-3. Vanilla SAM prompt benchmark и DINO-generated prompts.
-4. Один SAM fine-tuning режим.
-5. Извлечение DINOv3 descriptors и cold-start selection curves.
+1. ~~Seeds 43/44 и single-layer cosine control.~~
+2. ~~Один lesion-aware DINOv3 experiment.~~
+3. ~~Vanilla SAM oracle prompt benchmark~~; далее DINO-generated prompts.
+4. Извлечение DINOv3 descriptors и cold-start selection curves.
+5. Один SAM mask-decoder fine-tuning режим.
 6. Uncertainty + diversity только после устойчивого cold-start baseline.
 7. Один финальный test для выбранных DINOv3 и SAM конфигураций.

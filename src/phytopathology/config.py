@@ -29,6 +29,8 @@ class DataConfig:
     sampling: str = "shuffle"
     small_lesion_quantile: float = 0.25
     small_lesion_factor: float = 2.0
+    subset_file: str | None = None
+    epoch_samples: int | None = None
 
 
 @dataclass(frozen=True)
