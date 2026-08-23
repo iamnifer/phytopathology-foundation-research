@@ -38,12 +38,14 @@ def main() -> None:
         config.data.ignore_index,
         config.data.metadata_file,
         binary_masks=config.data.binary_masks,
+        resize_mode=config.data.resize_mode,
     )
     model = DINOv3Segmenter(
         config.model.backbone,
         config.data.num_classes,
         config.model.decoder,
         config.model.freeze_backbone,
+        config.model.feature_layers,
     ).to(device)
     checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
     missing, unexpected = model.load_state_dict(checkpoint["model"], strict=False)

@@ -17,6 +17,14 @@
   `foreground IoU = 0.6112` против `0.6036` у ViT-B/16.
 - Простая convolutional head на ViT-B/16 оказалась заметно сильнее:
   `test foreground IoU = 0.6488`, Dice `0.7870`, pixel AP `0.8763`.
+- Validation-only абляции показали, что aspect-preserving padding и умеренные
+  spatial/color аугментации не переносятся автоматически: лучший foreground
+  IoU снизился с `0.6345` до `0.6248`.
+- Четыре промежуточных слоя сами по себе дали лишь `0.6357`, но 30 эпох с
+  cosine decay подняли validation foreground IoU до **`0.6569`**. Результат
+  пока требует повторения на дополнительных seeds; новый test не запускался.
+- Главный обнаруженный failure mode — малые поражения: macro IoU меняется от
+  `0.3247` в нижнем квартиле размера маски до `0.7469` в верхнем.
 - Вычислительная ВМ подготовлена: A100 80 GB, 116 GB RAM; веса ViT-B/16 и
   ViT-L/16 получены через ModelScope.
 
@@ -31,6 +39,17 @@
 [docs/experiments/005_dinov3_vitl16_binary_linear.md](docs/experiments/005_dinov3_vitl16_binary_linear.md).
 Сравнение decoder heads записано в
 [docs/experiments/006_dinov3_vitb16_binary_conv.md](docs/experiments/006_dinov3_vitb16_binary_conv.md).
+Эксперименты коллеги и их применимость разобраны в
+[docs/colleague_experiments_review.md](docs/colleague_experiments_review.md).
+Последние validation-абляции находятся в
+[docs/experiments/007_binary_threshold_calibration.md](docs/experiments/007_binary_threshold_calibration.md),
+[docs/experiments/008_preprocessing_augmentation_ablation.md](docs/experiments/008_preprocessing_augmentation_ablation.md),
+[docs/experiments/009_dinov3_multilayer_conv.md](docs/experiments/009_dinov3_multilayer_conv.md)
+и [docs/experiments/010_validation_error_analysis.md](docs/experiments/010_validation_error_analysis.md).
+Лучший новый validation run описан в
+[docs/experiments/011_multilayer_cosine.md](docs/experiments/011_multilayer_cosine.md),
+а готовая сводка для обсуждения — в
+[docs/supervisor_update_2026-09.md](docs/supervisor_update_2026-09.md).
 
 ## Быстрый старт
 

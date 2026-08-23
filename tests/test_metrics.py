@@ -1,7 +1,11 @@
 import pytest
 import torch
 
-from phytopathology.metrics import BinaryAveragePrecision, SegmentationMetrics
+from phytopathology.metrics import (
+    BinaryAveragePrecision,
+    BinaryThresholdSweep,
+    SegmentationMetrics,
+)
 
 
 def test_dataset_level_miou_ignores_absent_classes() -> None:
@@ -47,3 +51,18 @@ def test_binary_average_precision_is_one_for_perfect_ranking() -> None:
     metric.update(torch.tensor([0.1, 0.9, 0.2, 0.8]), torch.tensor([0, 1, 0, 1]))
 
     assert metric.compute() == pytest.approx(1.0)
+
+
+def test_binary_threshold_sweep_finds_separating_threshold() -> None:
+    sweep = BinaryThresholdSweep(bins=100)
+    sweep.update(
+        torch.tensor([0.1, 0.4, 0.6, 0.9]),
+        torch.tensor([0, 0, 1, 1]),
+    )
+
+    rows = sweep.compute([0.3, 0.5, 0.7])
+
+    assert rows[1]["foreground_iou"] == pytest.approx(1.0)
+    assert rows[1]["miou"] == pytest.approx(1.0)
+    assert rows[0]["foreground_precision"] < 1.0
+    assert rows[2]["foreground_recall"] < 1.0

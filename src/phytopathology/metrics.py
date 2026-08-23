@@ -106,3 +106,68 @@ class BinaryAveragePrecision:
         recall = positives / total_positives
         recall_increment = torch.diff(recall, prepend=torch.zeros(1, dtype=recall.dtype))
         return (precision * recall_increment).sum().item()
+
+
+class BinaryThresholdSweep:
+    """Dataset-level binary metrics over probability thresholds using histograms."""
+
+    def __init__(self, bins: int = 2048, ignore_index: int = 255) -> None:
+        if bins < 2:
+            raise ValueError("bins must be at least 2")
+        self.bins = bins
+        self.ignore_index = ignore_index
+        self.positive = torch.zeros(bins, dtype=torch.int64)
+        self.negative = torch.zeros(bins, dtype=torch.int64)
+
+    def update(self, foreground_probability: torch.Tensor, target: torch.Tensor) -> None:
+        scores = foreground_probability.detach().flatten()
+        target = target.detach().flatten()
+        valid = target != self.ignore_index
+        scores, target = scores[valid], target[valid]
+        indices = (scores * self.bins).to(torch.int64).clamp_(0, self.bins - 1)
+        self.positive += torch.bincount(
+            indices[target == 1], minlength=self.bins
+        ).cpu()
+        self.negative += torch.bincount(
+            indices[target == 0], minlength=self.bins
+        ).cpu()
+
+    def compute(self, thresholds: list[float]) -> list[dict[str, float]]:
+        positive_above = self.positive.flip(0).cumsum(0).flip(0).to(torch.float64)
+        negative_above = self.negative.flip(0).cumsum(0).flip(0).to(torch.float64)
+        total_positive = self.positive.sum().to(torch.float64)
+        total_negative = self.negative.sum().to(torch.float64)
+        rows = []
+        for threshold in thresholds:
+            if not 0.0 <= threshold <= 1.0:
+                raise ValueError("thresholds must be in [0, 1]")
+            index = min(int(threshold * self.bins), self.bins - 1)
+            true_positive = positive_above[index]
+            false_positive = negative_above[index]
+            false_negative = total_positive - true_positive
+            true_negative = total_negative - false_positive
+            foreground_iou = _safe_ratio(
+                true_positive, true_positive + false_positive + false_negative
+            )
+            background_iou = _safe_ratio(
+                true_negative, true_negative + false_positive + false_negative
+            )
+            rows.append(
+                {
+                    "threshold": float(threshold),
+                    "miou": (foreground_iou + background_iou) / 2,
+                    "foreground_iou": foreground_iou,
+                    "background_iou": background_iou,
+                    "foreground_dice": _safe_ratio(
+                        2 * true_positive,
+                        2 * true_positive + false_positive + false_negative,
+                    ),
+                    "foreground_precision": _safe_ratio(
+                        true_positive, true_positive + false_positive
+                    ),
+                    "foreground_recall": _safe_ratio(
+                        true_positive, true_positive + false_negative
+                    ),
+                }
+            )
+        return rows

@@ -155,6 +155,8 @@ def main() -> None:
         config.data.metadata_file,
         augment=True,
         binary_masks=config.data.binary_masks,
+        resize_mode=config.data.resize_mode,
+        augmentation=config.data.augmentation,
         limit=limit_train,
     )
     val_set = PlantSegDataset(
@@ -166,6 +168,7 @@ def main() -> None:
         config.data.ignore_index,
         config.data.metadata_file,
         binary_masks=config.data.binary_masks,
+        resize_mode=config.data.resize_mode,
         limit=limit_val,
     )
     train_loader = make_loader(train_set, config, True)
@@ -175,6 +178,7 @@ def main() -> None:
         config.data.num_classes,
         config.model.decoder,
         config.model.freeze_backbone,
+        config.model.feature_layers,
     ).to(device)
     trainable = [parameter for parameter in model.parameters() if parameter.requires_grad]
     optimizer = torch.optim.AdamW(
@@ -182,16 +186,32 @@ def main() -> None:
         lr=config.training.learning_rate,
         weight_decay=config.training.weight_decay,
     )
+    if config.training.scheduler == "constant":
+        scheduler = None
+    elif config.training.scheduler == "cosine":
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=config.training.epochs,
+            eta_min=config.training.minimum_learning_rate,
+        )
+    else:
+        raise ValueError("training.scheduler must be 'constant' or 'cosine'")
     criterion = nn.CrossEntropyLoss(ignore_index=config.data.ignore_index)
     best_metric = -1.0
     metrics_path = run_dir / "metrics.jsonl"
     epochs = 1 if args.smoke_test else config.training.epochs
     for epoch in range(1, epochs + 1):
+        learning_rate = optimizer.param_groups[0]["lr"]
         train_loss = train_epoch(
             model, train_loader, optimizer, criterion, device, config.training.amp
         )
         validation = evaluate(model, val_loader, criterion, device, config)
-        record = {"epoch": epoch, "train_loss": train_loss, "validation": validation}
+        record = {
+            "epoch": epoch,
+            "learning_rate": learning_rate,
+            "train_loss": train_loss,
+            "validation": validation,
+        }
         with metrics_path.open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(record) + os.linesep)
         print(json.dumps(record, ensure_ascii=False))
@@ -209,6 +229,8 @@ def main() -> None:
                 {"epoch": epoch, "model": trainable_state, "config": config.as_dict()},
                 run_dir / "best.pt",
             )
+        if scheduler is not None:
+            scheduler.step()
 
 
 if __name__ == "__main__":

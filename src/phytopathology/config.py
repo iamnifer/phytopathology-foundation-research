@@ -24,6 +24,8 @@ class DataConfig:
     batch_size: int = 16
     num_workers: int = 8
     binary_masks: bool = False
+    resize_mode: str = "stretch"
+    augmentation: str = "horizontal_flip"
 
 
 @dataclass(frozen=True)
@@ -31,6 +33,7 @@ class ModelConfig:
     backbone: str = "facebook/dinov3-vitb16-pretrain-lvd1689m"
     decoder: str = "linear"
     freeze_backbone: bool = True
+    feature_layers: str = "last"
 
 
 @dataclass(frozen=True)
@@ -41,6 +44,8 @@ class TrainingConfig:
     amp: bool = True
     exclude_background_from_miou: bool = False
     selection_metric: str = "miou"
+    scheduler: str = "constant"
+    minimum_learning_rate: float = 1e-5
 
 
 @dataclass(frozen=True)

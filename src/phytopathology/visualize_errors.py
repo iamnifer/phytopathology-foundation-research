@@ -34,6 +34,7 @@ def load_model(config, checkpoint_path: Path, device: torch.device) -> DINOv3Seg
         config.data.num_classes,
         config.model.decoder,
         config.model.freeze_backbone,
+        config.model.feature_layers,
     ).to(device)
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
     missing, unexpected = model.load_state_dict(checkpoint["model"], strict=False)
@@ -110,6 +111,7 @@ def main() -> None:
         config.data.ignore_index,
         config.data.metadata_file,
         binary_masks=True,
+        resize_mode=config.data.resize_mode,
     )
     model = load_model(config, args.checkpoint, device)
     ranked = rank_predictions(model, dataset, device)
