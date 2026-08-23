@@ -56,3 +56,16 @@ PlantSeg v3 содержит 7916/1247/2295 изображений в train/val/
 modelscope download --model facebook/dinov3-vitb16-pretrain-lvd1689m \
   --local_dir models/dinov3-vitb16-pretrain-lvd1689m
 ```
+
+## Сборка отчёта
+
+С 2026-09-14 на ВМ установлены `latexmk`, XeLaTeX, biber, кириллические и
+дополнительные LaTeX-пакеты, а также Liberation fonts. Отчёт собирается так:
+
+```bash
+cd /home/iamnifer/phytopathology-foundation-research/report
+latexmk coursework.tex
+```
+
+Результат создаётся в `report/build/coursework.pdf`; каталог `build/`
+игнорируется Git.
