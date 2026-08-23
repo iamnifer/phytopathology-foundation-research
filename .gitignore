@@ -26,6 +26,13 @@ test2.pdf
 test_files/
 test2_files/
 
+# LaTeX build output
+report/build/
+
+# Locally supplied coursework guidelines and example reports
+report/*.pdf
+report/examples/
+
 # Scratch presentation drafts found during the initial repository audit
 dinov3_presentation.pdf
 dinov3_presentation.qmd

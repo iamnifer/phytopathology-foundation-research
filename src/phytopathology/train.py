@@ -28,6 +28,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train a DINOv3 PlantSeg probe")
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--data-root", type=Path, help="Override data.root from YAML")
+    parser.add_argument("--seed", type=int, help="Override experiment.seed from YAML")
     parser.add_argument("--smoke-test", action="store_true", help="Use 32 train and 16 val samples")
     return parser.parse_args()
 
@@ -133,6 +134,8 @@ def main() -> None:
     config = load_config(args.config)
     if args.data_root:
         object.__setattr__(config.data, "root", str(args.data_root))
+    if args.seed is not None:
+        object.__setattr__(config.experiment, "seed", args.seed)
     set_seed(config.experiment.seed)
     run_dir = make_run_dir(config)
     (run_dir / "config.yaml").write_text(

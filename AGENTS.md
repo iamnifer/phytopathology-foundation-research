@@ -5,6 +5,12 @@ segmentation with DINOv3 and PlantSeg. Read `README.md`, `ROADMAP.md`,
 `docs/research_plan.md`, and `docs/colleague_experiments_review.md` before making
 research decisions. Record every completed run in `docs/experiments/`.
 
+The current research goal is to study the quality/annotation-budget trade-off
+when adapting DINOv3 and SAM to binary plant-lesion segmentation. The final
+work must connect two lines: (A) DINOv3/SAM adaptation quality and (B) training
+image selection with limited pixel masks. See `docs/research_plan.md` for RQs,
+budgets, controls, and completion criteria.
+
 ## Primary protocol
 
 - Primary task: binary lesion/disease (`all original labels > 0`) vs background
@@ -60,14 +66,19 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
 
 ## Current experiment queue
 
-1. Replicate `dinov3_vitb16_binary_multilayer_conv_cosine` with seeds 43 and 44;
-   report mean ± std. Do not evaluate these variants on test.
+1. Finish the running controlled series: multi-layer cosine seeds 43/44 and a
+   seed-42 single-layer convolutional decoder with the same 30-epoch cosine
+   schedule. Report mean ± std and isolate architecture from schedule length.
 2. Test one lesion-aware intervention because Q1 small-mask macro IoU remains
    0.3832 vs 0.7687 for Q4: crop/oversampling first, then a loss ablation.
-3. If the gain is stable, consider partial unfreezing of the last 1–2 ViT blocks.
-4. Evaluate the finalized winner once on test and update `report/coursework.tex`.
-5. Later: SAM vanilla/prompt baselines and data-minimization experiments
-   (random, k-means/k-medoids on embeddings, farthest-point sampling).
+3. Benchmark frozen SAM separately for oracle point/box prompts and automatic
+   prompts derived from DINO predictions; never present oracle prompts as an
+   automatic baseline. Then train the SAM mask decoder.
+4. Extract cached DINOv3 image descriptors and evaluate random, stratified
+   random, cluster representatives and farthest-first selection at
+   1/5/10/25/50/100% label budgets with fixed optimizer-step rules.
+5. Only after the above, test uncertainty+diversity and partial backbone
+   unfreezing. Evaluate finalized winners once on test.
 
 ## Important findings and pitfalls
 
@@ -86,6 +97,9 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
   an earlier stage; synchronize it only after the current experiment series.
 - The unchanged legacy notebook remains in the root as provenance, not as the
   production training path. Eventually move it to `notebooks/archive/`.
+- The coursework source is autonomous under `report/`: build it with
+  `latexmk coursework.tex` from that directory. XeLaTeX/biber are installed on
+  the VM. Title-page placeholders live in `report/metadata.tex`.
 
 ## Repository hygiene
 

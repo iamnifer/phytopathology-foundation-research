@@ -1,6 +1,7 @@
 # План работы
 
-Обновлено: 2026-09-08.
+Обновлено: 2026-09-14. Полная мотивация и протокол находятся в
+[`docs/research_plan.md`](docs/research_plan.md).
 
 ## Сейчас
 
@@ -23,28 +24,38 @@
 - [x] Проверить validation-only threshold calibration.
 - [x] Сравнить stretch, aspect-preserving pad и умеренные аугментации.
 - [x] Завершить 30-эпоховый multi-layer run с cosine schedule (`val fg IoU 0.6569`).
+- [ ] Повторить multi-layer + cosine на seeds 43 и 44.
+- [ ] Запустить single-layer conv с тем же 30-эпоховым cosine schedule как
+      обязательный контроль.
 - [ ] Проверить lesion-aware crop sampling / foreground-aware loss для малых масок.
-- [ ] Настроить AdamW и class weights.
-- [ ] Проверить частичный fine-tuning последних блоков и LoRA/adapters.
+- [ ] Проверить частичный fine-tuning последних 1–2 DINOv3 blocks.
 - [ ] Выполнить минимум 3 запуска лучших конфигураций с разными seeds.
 - [x] Добавить foreground IoU, Dice, precision/recall и pixel AP.
 - [x] Добавить выбор и отрисовку лучших/типичных/худших binary predictions.
-- [ ] Уточнить у руководителя, означает ли `mAP` pixel AP или COCO mask AP.
-- [ ] Зафиксировать mean/std; целевая binary-метрика — около 0.70.
+- [x] Зафиксировать точное название текущей метрики: foreground pixel AP, не
+      COCO mask AP.
+- [ ] Зафиксировать mean/std; ориентир 0.70 не использовать для выбора по test.
 
-## Затем: few-shot
+## Затем: эффективность разметки
 
-- [ ] Зафиксировать протокол: число изображений на класс и seeds выборки.
+- [x] Зафиксировать основную единицу бюджета: полностью размеченное изображение.
+- [ ] Добавить фиксированный optimizer-step budget для сравнения подмножеств.
+- [ ] Извлечь и закешировать DINOv3 image descriptors из patch embeddings.
 - [ ] Random sampling baseline.
-- [ ] k-means / k-medoids по patch embeddings.
-- [ ] Farthest Point Sampling.
-- [ ] Кривые качество–число размеченных изображений.
+- [ ] Stratified random baseline по бесплатным image-level metadata.
+- [ ] k-means representatives / k-medoids.
+- [ ] Farthest-first / greedy k-center.
+- [ ] Гибрид uncertainty + diversity после cold start.
+- [ ] Кривые качества для 1/5/10/25/50/100% train, mean ± std.
 
 ## Отдельные ветки исследования
 
-- [ ] Сравнение с SAM/SAM3 при одинаковом split и метрике.
+- [ ] Vanilla SAM: oracle point/box promptability benchmark.
+- [ ] Автоматические DINO→SAM prompts без GT.
+- [ ] SAM mask-decoder fine-tuning; adapter/LoRA только как второй этап.
 - [x] Визуализация ошибок и анализ качества по размеру поражения/болезни.
-- [ ] Синхронизировать таблицы экспериментов с текстом курсовой.
+- [x] Перестроить промежуточный отчёт вокруг общей исследовательской цели.
+- [x] Добавить автономную XeLaTeX/biber сборку отчёта.
 
 ## Definition of done для эксперимента
 
