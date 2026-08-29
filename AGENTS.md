@@ -86,6 +86,9 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
 - Data: `data/plantseg_v3`; ModelScope weights:
   `models/dinov3-vitb16-pretrain-lvd1689m` and
   `models/dinov3-vitl16-pretrain-lvd1689m`.
+- External healthy false-alarm check: PlantWild v1 manifest at
+  `data/plantwild_hf/healthy_manifest.json`; all 1556 official healthy-test
+  images are downloaded. Keep this result separate from in-domain PlantSeg.
 - Run artifacts live in `runs/` and are intentionally gitignored. Each run must
   contain resolved config, environment, JSONL metrics and `best.pt`.
 - When syncing, preserve directory structure and never overwrite `data/`,
@@ -98,7 +101,9 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
 2. Run matched DINOv3 resolution controls at 512 and 768 px.
 3. Add 10,000-repeat paired image bootstrap, log-budget AULC excluding the
    shared 100% endpoint, selected-set composition, visual panels and a manual
-   taxonomy of 50--100 hard cases.
+   taxonomy of 50--100 hard cases. `scripts/run_final_postprocessing.sh` is
+   queued after core training and also evaluates all resolutions on each
+   annotation's original pixel grid.
 4. Record compute cost, rewrite the report according to supervisor review and
    only then decide whether one final test evaluation is defensible.
 
