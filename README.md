@@ -32,6 +32,10 @@
   новый test не запускался.
 - Главный обнаруженный failure mode — малые поражения: macro IoU меняется от
   `0.3247` в нижнем квартиле размера маски до `0.7469` в верхнем.
+- Первая seed-42 серия эффективности разметки завершена. Random и stratified
+  достигают 95% full-data disease IoU на 25% масок; farthest-first по
+  усреднённым DINOv3-дескрипторам уступает random. Ранжирование методов остаётся
+  предварительным до повторов на дополнительных seed.
 - Вычислительная ВМ подготовлена: A100 80 GB, 116 GB RAM; веса ViT-B/16 и
   ViT-L/16 получены через ModelScope.
 - Промежуточный отчёт перестроен вокруг общей исследовательской задачи и
@@ -59,6 +63,8 @@
 [docs/experiments/011_multilayer_cosine.md](docs/experiments/011_multilayer_cosine.md),
 а готовая сводка для обсуждения — в
 [docs/supervisor_update_2026-09.md](docs/supervisor_update_2026-09.md).
+Первая кривая эффективности данных зафиксирована в
+[docs/experiments/015_label_efficiency_seed42.md](docs/experiments/015_label_efficiency_seed42.md).
 
 ## Быстрый старт
 

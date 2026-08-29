@@ -14,6 +14,8 @@ runs/
 logs/
 features/
 subsets/
+artifacts/
+references/
 *.pth
 *.pt
 *.ckpt

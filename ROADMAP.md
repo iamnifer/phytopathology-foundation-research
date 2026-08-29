@@ -47,6 +47,9 @@
 - [x] Подготовить nested stratified random subsets по image-level metadata.
 - [ ] k-means representatives / k-medoids.
 - [x] Подготовить nested farthest-first / greedy k-center subsets.
+- [x] Построить seed-42 curves для random/stratified/farthest-first на
+      1/5/10/25/50% train; test не использован.
+- [ ] Повторить 10% и 25% для seeds 43/44 и посчитать mean +/- std.
 - [ ] Гибрид uncertainty + diversity после cold start.
 - [ ] Кривые качества для 1/5/10/25/50/100% train, mean ± std.
 
@@ -70,6 +73,8 @@ per-class IoU, лучший checkpoint и короткий вывод в `docs/e
 Multi-layer decoder имеет небольшой, но нестабильный средний выигрыш над
 single-layer (`+0.0075 ± 0.0069` в парном сравнении). Image-level oversampling
 малых масок не помог даже Q1, а oracle box для frozen SAM дал только `0.4659`
-disease IoU. Основной приоритет теперь — запустить сопоставимые кривые качества
-random/stratified/farthest-first при фиксированном числе шагов, сохраняя test
-закрытым до выбора финальной конфигурации.
+disease IoU. Первая seed-42 кривая эффективности данных показала, что random и
+stratified random достигают 95% full-data IoU уже на 25% масок; farthest-first
+не превосходит random ни в одной устойчивой точке и достигает этого порога на
+50%. Основной приоритет теперь — подтвердить 10/25% на seeds 43/44, добавить
+representative clustering и перейти к автоматическим DINO-to-SAM prompts.

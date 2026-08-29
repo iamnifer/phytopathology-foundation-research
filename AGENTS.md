@@ -59,6 +59,11 @@ All values below use 384×384 stretched inputs unless explicitly noted.
   positive point gives disease IoU 0.3624; exact GT box gives 0.4659. Box recall
   is 0.8835 but precision 0.4964. These are upper-bound diagnostics, not
   automatic segmentation results.
+- Seed-42 label-efficiency curves are complete for 1/5/10/25/50% budgets with
+  matched optimizer steps. Random/stratified reach 95% of the matching
+  full-data IoU at 25%; farthest-first reaches it at 50%. At 50%, random,
+  stratified and farthest-first score 0.6388, 0.6361 and 0.6316 disease IoU.
+  Treat method ranking as preliminary until seeds 43/44 are run.
 - Exploratory multiclass ViT-B linear test mIoU: 0.3902. The notebook's saved
   `0.4575` is stale/inconsistent and must not be presented as verified.
 
@@ -86,13 +91,12 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
 
 ## Current experiment queue
 
-1. Extract cached DINOv3 image descriptors and evaluate random, stratified
-   random, cluster representatives and farthest-first selection at
-   1/5/10/25/50/100% label budgets with fixed optimizer-step rules.
+1. Repeat random/stratified/farthest-first at 10% and 25% for seeds 43/44; add
+   k-means representative selection and analyze selected-set composition.
 2. Evaluate automatic prompts derived from DINO predictions separately from the
    completed oracle SAM benchmark; then train the SAM mask decoder once.
-3. Only after the above, test uncertainty+diversity and partial backbone
-   unfreezing. Evaluate finalized winners once on test.
+3. Only after the above, test uncertainty+diversity and, if time remains,
+   partial backbone unfreezing. Evaluate finalized winners once on test.
 
 ## Important findings and pitfalls
 
