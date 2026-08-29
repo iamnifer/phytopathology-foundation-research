@@ -14,10 +14,12 @@ than adding a separate image-classification track merely to mirror every word.
 The final report deadline is 2026-09-18 23:59 Europe/Moscow.
 
 The current research goal is to study the quality/annotation-budget trade-off
-when adapting DINOv3 and SAM to binary plant-lesion segmentation. The final
-work must connect two lines: (A) DINOv3/SAM adaptation quality and (B) training
-image selection with limited pixel masks. See `docs/research_plan.md` for RQs,
-budgets, controls, and completion criteria.
+when transferring CNN and transformer/foundation models to binary plant-lesion
+segmentation. The final work connects (A) a fair DeepLabV3-ResNet50 versus
+DINOv3 comparison and controlled DINO adaptation with (B) training-image
+selection under limited pixel masks. SAM is now a diagnostic promptability
+result, not a promised fine-tuned system. Read `docs/review_response_v1.md`
+before changing scope.
 
 ## Primary protocol
 
@@ -26,9 +28,10 @@ budgets, controls, and completion criteria.
 - Primary selection metric: dataset-level foreground/disease IoU on validation.
   Also report mean IoU over the two classes, Dice, precision, recall and pixel AP.
 - Do not mix binary results with the exploratory 116-class experiment.
-- Tune checkpoints, thresholds and hyperparameters on validation only. The test
-  split is locked after the current baselines; evaluate it only for a finalized
-  configuration. Never select a model from test numbers.
+- Tune checkpoints, thresholds and hyperparameters on validation only. Earlier
+  exploratory baselines already viewed test, which must be disclosed; do not
+  select a model from those numbers or add new test evaluations before the
+  final protocol is fixed.
 - Use one controlled change per ablation and preserve null/negative results.
 - Before a final comparison, run at least three seeds and report mean ± std.
 
@@ -60,10 +63,10 @@ All values below use 384×384 stretched inputs unless explicitly noted.
   is 0.8835 but precision 0.4964. These are upper-bound diagnostics, not
   automatic segmentation results.
 - Seed-42 label-efficiency curves are complete for 1/5/10/25/50% budgets with
-  matched optimizer steps. Random/stratified reach 95% of the matching
-  full-data IoU at 25%; farthest-first reaches it at 50%. At 50%, random,
-  stratified and farthest-first score 0.6388, 0.6361 and 0.6316 disease IoU.
-  Treat method ranking as preliminary until seeds 43/44 are run.
+  matched optimizer steps. Repeats at 10/25% are complete: stratified minus
+  random is only +0.0015/+0.0025, while farthest-first minus random is
+  -0.0159/-0.0097 (paired means over three runs). Do not turn the 95% crossing
+  into a sharp claim because its margin is much smaller than run-to-run noise.
 - Exploratory multiclass ViT-B linear test mIoU: 0.3902. The notebook's saved
   `0.4575` is stale/inconsistent and must not be presented as verified.
 
@@ -91,12 +94,17 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
 
 ## Current experiment queue
 
-1. Repeat random/stratified/farthest-first at 10% and 25% for seeds 43/44; add
-   k-means representative selection and analyze selected-set composition.
-2. Evaluate automatic prompts derived from DINO predictions separately from the
-   completed oracle SAM benchmark; then train the SAM mask decoder once.
-3. Only after the above, test uncertainty+diversity and, if time remains,
-   partial backbone unfreezing. Evaluate finalized winners once on test.
+1. Finish three pretrained DeepLabV3-ResNet50 runs plus one scratch control.
+2. Run matched DINOv3 resolution controls at 512 and 768 px.
+3. Add 10,000-repeat paired image bootstrap, log-budget AULC excluding the
+   shared 100% endpoint, selected-set composition, visual panels and a manual
+   taxonomy of 50--100 hard cases.
+4. Record compute cost, rewrite the report according to supervisor review and
+   only then decide whether one final test evaluation is defensible.
+
+Do not spend the deadline window on SAM fine-tuning, DINO→SAM, uncertainty,
+partial unfreezing, ViT-L+conv or a broad clustering grid unless all mandatory
+review items are finished.
 
 ## Important findings and pitfalls
 

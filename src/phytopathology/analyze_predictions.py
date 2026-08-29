@@ -7,11 +7,11 @@ from pathlib import Path
 import pandas as pd
 import torch
 from tqdm import tqdm
-from transformers import AutoImageProcessor
 
 from .config import load_config
 from .data import PlantSegDataset
-from .model import DINOv3Segmenter
+from .model import build_model, load_trainable_state
+from .processing import build_processor
 from .train import autocast_context, make_loader, set_seed
 
 
@@ -63,6 +63,10 @@ def collect_rows(
                     "foreground_iou": float(iou[index]),
                     "foreground_precision": float(precision[index]),
                     "foreground_recall": float(recall[index]),
+                    "true_positive": int(true_positive[index]),
+                    "false_positive": int(false_positive[index]),
+                    "false_negative": int(false_negative[index]),
+                    "valid_pixels": int(valid_count[index]),
                     "gt_foreground_fraction": float(actual_count[index] / valid_count[index]),
                     "pred_foreground_fraction": float(predicted_count[index] / valid_count[index]),
                 }
@@ -112,7 +116,7 @@ def main() -> None:
         raise ValueError("Per-image analysis requires a two-class binary config")
     set_seed(config.experiment.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    processor = AutoImageProcessor.from_pretrained(config.model.backbone)
+    processor = build_processor(config.model)
     dataset = PlantSegDataset(
         config.data.root,
         args.split,
@@ -129,17 +133,9 @@ def main() -> None:
     if len(metadata) != len(dataset):
         raise RuntimeError("Metadata order does not match the dataset")
 
-    model = DINOv3Segmenter(
-        config.model.backbone,
-        config.data.num_classes,
-        config.model.decoder,
-        config.model.freeze_backbone,
-        config.model.feature_layers,
-    ).to(device)
+    model = build_model(config.model, config.data.num_classes).to(device)
     checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
-    missing, unexpected = model.load_state_dict(checkpoint["model"], strict=False)
-    if unexpected or any(not name.startswith("backbone.") for name in missing):
-        raise RuntimeError(f"Checkpoint mismatch: missing={missing}, unexpected={unexpected}")
+    load_trainable_state(model, checkpoint["model"])
 
     frame = collect_rows(
         model,

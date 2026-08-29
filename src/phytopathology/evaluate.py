@@ -6,11 +6,11 @@ from pathlib import Path
 
 import torch
 from torch import nn
-from transformers import AutoImageProcessor
 
 from .config import load_config
 from .data import PlantSegDataset
-from .model import DINOv3Segmenter
+from .model import build_model, load_trainable_state
+from .processing import build_processor
 from .train import evaluate, make_loader, set_seed
 
 
@@ -28,7 +28,7 @@ def main() -> None:
     config = load_config(args.config)
     set_seed(config.experiment.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    processor = AutoImageProcessor.from_pretrained(config.model.backbone)
+    processor = build_processor(config.model)
     dataset = PlantSegDataset(
         config.data.root,
         args.split,
@@ -40,17 +40,9 @@ def main() -> None:
         binary_masks=config.data.binary_masks,
         resize_mode=config.data.resize_mode,
     )
-    model = DINOv3Segmenter(
-        config.model.backbone,
-        config.data.num_classes,
-        config.model.decoder,
-        config.model.freeze_backbone,
-        config.model.feature_layers,
-    ).to(device)
+    model = build_model(config.model, config.data.num_classes).to(device)
     checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
-    missing, unexpected = model.load_state_dict(checkpoint["model"], strict=False)
-    if unexpected or any(not name.startswith("backbone.") for name in missing):
-        raise RuntimeError(f"Checkpoint mismatch: missing={missing}, unexpected={unexpected}")
+    load_trainable_state(model, checkpoint["model"])
 
     criterion = nn.CrossEntropyLoss(ignore_index=config.data.ignore_index)
     result = evaluate(model, make_loader(dataset, config, False), criterion, device, config)

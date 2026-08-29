@@ -5,6 +5,8 @@ from torch import nn
 from torch.nn import functional as F
 from transformers import AutoModel
 
+from .config import ModelConfig
+
 
 class ConvDecoder(nn.Sequential):
     def __init__(self, in_channels: int, num_classes: int) -> None:
@@ -85,3 +87,65 @@ class DINOv3Segmenter(nn.Module):
         features = torch.cat(features, dim=1)
         logits = self.decoder(features)
         return F.interpolate(logits, size=(height, width), mode="bilinear", align_corners=False)
+
+
+class DeepLabV3Segmenter(nn.Module):
+    """Torchvision DeepLabV3 with a ResNet-50 CNN encoder."""
+
+    def __init__(self, num_classes: int, pretrained: bool = True) -> None:
+        super().__init__()
+        from torchvision.models import ResNet50_Weights
+        from torchvision.models.segmentation import deeplabv3_resnet50
+
+        backbone_weights = ResNet50_Weights.IMAGENET1K_V2 if pretrained else None
+        self.network = deeplabv3_resnet50(
+            weights=None,
+            weights_backbone=backbone_weights,
+            num_classes=num_classes,
+            aux_loss=False,
+        )
+
+    def forward(self, pixel_values: torch.Tensor) -> torch.Tensor:
+        return self.network(pixel_values)["out"]
+
+
+def build_model(config: ModelConfig, num_classes: int) -> nn.Module:
+    if config.architecture == "dinov3":
+        return DINOv3Segmenter(
+            config.backbone,
+            num_classes,
+            config.decoder,
+            config.freeze_backbone,
+            config.feature_layers,
+        )
+    if config.architecture == "deeplabv3_resnet50":
+        return DeepLabV3Segmenter(num_classes, pretrained=config.pretrained)
+    raise ValueError(
+        "model.architecture must be 'dinov3' or 'deeplabv3_resnet50'"
+    )
+
+
+def trainable_state_dict(model: nn.Module) -> dict[str, torch.Tensor]:
+    trainable_names = {
+        name for name, parameter in model.named_parameters() if parameter.requires_grad
+    }
+    trainable_prefixes = {name.rsplit(".", 1)[0] for name in trainable_names if "." in name}
+    return {
+        name: tensor
+        for name, tensor in model.state_dict().items()
+        if name in trainable_names
+        or any(name.startswith(f"{prefix}.") for prefix in trainable_prefixes)
+    }
+
+
+def load_trainable_state(model: nn.Module, state: dict[str, torch.Tensor]) -> None:
+    missing, unexpected = model.load_state_dict(state, strict=False)
+    trainable_names = {
+        name for name, parameter in model.named_parameters() if parameter.requires_grad
+    }
+    missing_trainable = sorted(trainable_names.intersection(missing))
+    if unexpected or missing_trainable:
+        raise RuntimeError(
+            f"Checkpoint mismatch: missing trainable={missing_trainable}, "
+            f"unexpected={unexpected}"
+        )

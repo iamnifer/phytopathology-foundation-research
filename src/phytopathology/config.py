@@ -35,10 +35,12 @@ class DataConfig:
 
 @dataclass(frozen=True)
 class ModelConfig:
+    architecture: str = "dinov3"
     backbone: str = "facebook/dinov3-vitb16-pretrain-lvd1689m"
     decoder: str = "linear"
     freeze_backbone: bool = True
     feature_layers: str = "last"
+    pretrained: bool = True
 
 
 @dataclass(frozen=True)

@@ -45,10 +45,17 @@ At the selected checkpoints, the 50% runs obtained:
 | Stratified random | 16 | 0.7631 | 0.6361 | 0.7776 | 0.7628 | 0.7929 | **0.8599** |
 | Farthest-first | 18 | 0.7596 | 0.6316 | 0.7742 | 0.7545 | **0.7949** | 0.8526 |
 
-Trapezoidal normalized area under the 1--100% learning curve, after dividing
-IoU by the seed-42 full-data score, is 0.9612 for random, 0.9612 for stratified
-random and 0.9527 for farthest-first. Random and stratified random first cross
-95% of the full-data IoU at 25%; farthest-first crosses it at 50%.
+The earlier linear-axis 1--100% AULC is not used for comparing methods: the
+shared 100% endpoint dominates that quantity. With a logarithmic budget axis,
+normalization by the seed-42 full-data score and the shared 100% endpoint
+excluded, the 1--50% AULC is 0.8854 for random, 0.8976 for stratified random
+and 0.8788 for farthest-first. On the more decision-relevant 1--25% interval
+it is 0.8690, 0.8843 and 0.8632, respectively. The exact formula and interval
+must accompany these values in the report.
+
+In this single run, random and stratified random first cross 95% of the
+full-data IoU at 25%; farthest-first crosses it at 50%. The multi-seed repeat
+shows that this threshold crossing is not stable enough to be a binary claim.
 
 ## Interpretation
 
@@ -71,8 +78,8 @@ about 99 times per epoch under the matched-step protocol.
 
 ## Next validation
 
-- repeat random, stratified and farthest-first at the decision-relevant 10% and
-  25% budgets for seeds 43 and 44;
+- ~~repeat random, stratified and farthest-first at the decision-relevant 10%
+  and 25% budgets for seeds 43 and 44~~ (completed; see experiment 016);
 - add representative selection (k-means centroids or k-medoids), which tests a
   different hypothesis from outlier-seeking farthest-first;
 - inspect selected-set disease composition, lesion-size distribution and

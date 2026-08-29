@@ -9,11 +9,11 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import AutoImageProcessor
 
 from .config import load_config
 from .data import PlantSegDataset
-from .model import DINOv3Segmenter
+from .model import build_model, load_trainable_state
+from .processing import build_processor
 
 
 def parse_args() -> argparse.Namespace:
@@ -28,18 +28,10 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def load_model(config, checkpoint_path: Path, device: torch.device) -> DINOv3Segmenter:
-    model = DINOv3Segmenter(
-        config.model.backbone,
-        config.data.num_classes,
-        config.model.decoder,
-        config.model.freeze_backbone,
-        config.model.feature_layers,
-    ).to(device)
+def load_model(config, checkpoint_path: Path, device: torch.device) -> torch.nn.Module:
+    model = build_model(config.model, config.data.num_classes).to(device)
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
-    missing, unexpected = model.load_state_dict(checkpoint["model"], strict=False)
-    if unexpected or any(not name.startswith("backbone.") for name in missing):
-        raise RuntimeError(f"Checkpoint mismatch: missing={missing}, unexpected={unexpected}")
+    load_trainable_state(model, checkpoint["model"])
     return model.eval()
 
 
@@ -101,7 +93,7 @@ def main() -> None:
         raise SystemExit("Error visualization currently requires a binary_masks config")
     args.output_dir.mkdir(parents=True, exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    processor = AutoImageProcessor.from_pretrained(config.model.backbone)
+    processor = build_processor(config.model)
     dataset = PlantSegDataset(
         config.data.root,
         args.split,

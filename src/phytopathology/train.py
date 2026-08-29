@@ -6,6 +6,7 @@ import os
 import platform
 import random
 import subprocess
+import time
 from contextlib import nullcontext
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,12 +17,12 @@ import yaml
 from torch import nn
 from torch.utils.data import DataLoader, WeightedRandomSampler
 from tqdm import tqdm
-from transformers import AutoImageProcessor
 
 from .config import Config, load_config
 from .data import PlantSegDataset
 from .metrics import BinaryAveragePrecision, SegmentationMetrics
-from .model import DINOv3Segmenter
+from .model import build_model, trainable_state_dict
+from .processing import build_processor
 
 
 def parse_args() -> argparse.Namespace:
@@ -201,7 +202,7 @@ def main() -> None:
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    processor = AutoImageProcessor.from_pretrained(config.model.backbone)
+    processor = build_processor(config.model)
     limit_train, limit_val = (32, 16) if args.smoke_test else (None, None)
     train_set = PlantSegDataset(
         config.data.root,
@@ -249,13 +250,16 @@ def main() -> None:
         )
     train_loader = make_loader(train_set, config, True)
     val_loader = make_loader(val_set, config, False)
-    model = DINOv3Segmenter(
-        config.model.backbone,
-        config.data.num_classes,
-        config.model.decoder,
-        config.model.freeze_backbone,
-        config.model.feature_layers,
-    ).to(device)
+    model = build_model(config.model, config.data.num_classes).to(device)
+    parameter_summary = {
+        "total": sum(parameter.numel() for parameter in model.parameters()),
+        "trainable": sum(
+            parameter.numel() for parameter in model.parameters() if parameter.requires_grad
+        ),
+    }
+    (run_dir / "model.json").write_text(
+        json.dumps(parameter_summary, indent=2), encoding="utf-8"
+    )
     trainable = [parameter for parameter in model.parameters() if parameter.requires_grad]
     optimizer = torch.optim.AdamW(
         trainable,
@@ -276,7 +280,9 @@ def main() -> None:
     best_metric = -1.0
     metrics_path = run_dir / "metrics.jsonl"
     epochs = 1 if args.smoke_test else config.training.epochs
+    run_started = time.perf_counter()
     for epoch in range(1, epochs + 1):
+        epoch_started = time.perf_counter()
         learning_rate = optimizer.param_groups[0]["lr"]
         train_loss = train_epoch(
             model, train_loader, optimizer, criterion, device, config.training.amp
@@ -287,6 +293,7 @@ def main() -> None:
             "learning_rate": learning_rate,
             "train_loss": train_loss,
             "validation": validation,
+            "epoch_seconds": time.perf_counter() - epoch_started,
         }
         with metrics_path.open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(record) + os.linesep)
@@ -296,17 +303,20 @@ def main() -> None:
             raise KeyError(f"Unknown checkpoint selection metric: {selection_metric}")
         if validation[selection_metric] > best_metric:
             best_metric = float(validation[selection_metric])
-            trainable_state = {
-                name: tensor
-                for name, tensor in model.state_dict().items()
-                if name.startswith("decoder.")
-            }
+            trainable_state = trainable_state_dict(model)
             torch.save(
                 {"epoch": epoch, "model": trainable_state, "config": config.as_dict()},
                 run_dir / "best.pt",
             )
         if scheduler is not None:
             scheduler.step()
+    runtime = {
+        "total_seconds": time.perf_counter() - run_started,
+        "peak_cuda_memory_bytes": (
+            torch.cuda.max_memory_allocated() if device.type == "cuda" else None
+        ),
+    }
+    (run_dir / "runtime.json").write_text(json.dumps(runtime, indent=2), encoding="utf-8")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,26 @@
 # План работы
 
-Обновлено: 2026-09-14. Полная мотивация и протокол находятся в
+Обновлено: 2026-09-16 после ревью руководителя. Полная мотивация и протокол находятся в
 [`docs/research_plan.md`](docs/research_plan.md).
+
+## Обязательный финальный scope (до 18 сентября)
+
+- [ ] Обучить собственный CNN-бейзлайн DeepLabV3-ResNet50: pretrained, три
+      seed; добавить один scratch control.
+- [ ] Сравнить DINOv3 при 384/512/768 px без смены остальных факторов.
+- [ ] Посчитать paired image bootstrap (10 000 повторов) для главных
+      validation-сравнений и убрать claims, не подтверждённые интервалами.
+- [ ] Пересчитать label-efficiency mean ± std и log-budget AULC без общей
+      full-data точки; проанализировать состав выбранных подмножеств.
+- [ ] Подготовить DINO/SAM/selection панели и вручную классифицировать 50--100
+      наиболее плохих случаев.
+- [ ] Добавить время/память/скорость и практические рекомендации.
+- [ ] Переписать отчёт по матрице [`docs/review_response_v1.md`](docs/review_response_v1.md),
+      собрать PDF и проверить все числа.
+
+Не входят в обязательный scope этой версии: SAM fine-tuning/LoRA,
+uncertainty+diversity, partial DINO unfreezing, перенос финала на ViT-L и полный
+k-means/k-medoids grid.
 
 ## Сейчас
 
@@ -49,7 +68,7 @@
 - [x] Подготовить nested farthest-first / greedy k-center subsets.
 - [x] Построить seed-42 curves для random/stratified/farthest-first на
       1/5/10/25/50% train; test не использован.
-- [ ] Повторить 10% и 25% для seeds 43/44 и посчитать mean +/- std.
+- [x] Повторить 10% и 25% для seeds 43/44 и посчитать mean +/- std.
 - [ ] Гибрид uncertainty + diversity после cold start.
 - [ ] Кривые качества для 1/5/10/25/50/100% train, mean ± std.
 
@@ -73,8 +92,8 @@ per-class IoU, лучший checkpoint и короткий вывод в `docs/e
 Multi-layer decoder имеет небольшой, но нестабильный средний выигрыш над
 single-layer (`+0.0075 ± 0.0069` в парном сравнении). Image-level oversampling
 малых масок не помог даже Q1, а oracle box для frozen SAM дал только `0.4659`
-disease IoU. Первая seed-42 кривая эффективности данных показала, что random и
-stratified random достигают 95% full-data IoU уже на 25% масок; farthest-first
-не превосходит random ни в одной устойчивой точке и достигает этого порога на
-50%. Основной приоритет теперь — подтвердить 10/25% на seeds 43/44, добавить
-representative clustering и перейти к автоматическим DINO-to-SAM prompts.
+disease IoU. Повторы 10/25% показали: stratified отличается от random лишь на
+`+0.0015`/`+0.0025`, а farthest-first хуже на `-0.0159`/`-0.0097` (парные
+mean по трём seed). Эти малые выборки требуют осторожной интерпретации.
+Основной приоритет после ревью — собственный CNN-бейзлайн, контроль разрешения,
+bootstrap и объясняющие визуализации, а не расширение числа методов.
