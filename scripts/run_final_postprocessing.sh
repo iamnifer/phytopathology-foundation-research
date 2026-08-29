@@ -60,3 +60,21 @@ for model in dino cnn; do
     --split test \
     --output-dir "artifacts/healthy/${model}_seed42"
 done
+
+for run in "${dino_seed42}" "${cnn_seed42}"; do
+  .venv/bin/python -m phytopathology.evaluate_native \
+    --config "${run}/config.yaml" \
+    --checkpoint "${run}/best.pt" \
+    --split val \
+    --output-dir "${run}/native_val"
+done
+
+for size in 512 768; do
+  run=$(find runs -maxdepth 1 -type d \
+    -name "*_dinov3_vitb16_binary_multilayer_conv_cosine_${size}" | sort | tail -n 1)
+  .venv/bin/python -m phytopathology.evaluate_native \
+    --config "${run}/config.yaml" \
+    --checkpoint "${run}/best.pt" \
+    --split val \
+    --output-dir "${run}/native_val"
+done
