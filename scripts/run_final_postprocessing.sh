@@ -46,6 +46,15 @@ dino_seed42="${multilayer_runs[42]}"
   --seed 2026 \
   --output artifacts/bootstrap/cnn_vs_dino_seed42.json
 
+.venv/bin/python -m phytopathology.render_error_atlas \
+  --config "${dino_seed42}/config.yaml" \
+  --checkpoint "${dino_seed42}/best.pt" \
+  --per-image "${dino_seed42}/analysis_val_counts/per_image.csv" \
+  --split val \
+  --count 64 \
+  --per-page 8 \
+  --output-dir artifacts/error_atlas/dino_seed42
+
 for model in dino cnn; do
   if [[ "${model}" == "dino" ]]; then
     run="${dino_seed42}"
