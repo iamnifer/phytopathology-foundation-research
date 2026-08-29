@@ -117,7 +117,8 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
   production training path. Eventually move it to `notebooks/archive/`.
 - The coursework source is autonomous under `report/`: build it with
   `latexmk coursework.tex` from that directory. XeLaTeX/biber are installed on
-  the VM. Title-page placeholders live in `report/metadata.tex`.
+  the VM. Title-page metadata in `report/metadata.tex` was copied from the
+  submitted KT-1 report; do not replace it with placeholders.
 
 ## Repository hygiene
 
