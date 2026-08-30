@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "phytopathology-foundation-research"
 version = "0.1.0"
-description = "Reproducible DINOv3 experiments for PlantSeg"
+description = "Reproducible CNN and transformer transfer experiments for PlantSeg"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

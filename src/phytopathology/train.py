@@ -26,7 +26,7 @@ from .processing import build_processor
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train a DINOv3 PlantSeg probe")
+    parser = argparse.ArgumentParser(description="Train a PlantSeg segmentation model")
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--data-root", type=Path, help="Override data.root from YAML")
     parser.add_argument("--seed", type=int, help="Override experiment.seed from YAML")

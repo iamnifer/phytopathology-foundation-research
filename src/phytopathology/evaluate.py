@@ -15,7 +15,7 @@ from .train import evaluate, make_loader, set_seed
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Evaluate a saved PlantSeg decoder")
+    parser = argparse.ArgumentParser(description="Evaluate a saved PlantSeg model")
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--split", choices=("val", "test"), default="test")
