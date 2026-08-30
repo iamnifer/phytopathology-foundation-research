@@ -87,3 +87,22 @@ for size in 512 768; do
     --split val \
     --output-dir "${run}/native_val"
 done
+
+declare -A benchmark_runs=(
+  [cnn_384]="${cnn_seed42}"
+  [dino_384]="${dino_seed42}"
+)
+for size in 512 768; do
+  benchmark_runs["dino_${size}"]=$(find runs -maxdepth 1 -type d \
+    -name "*_dinov3_vitb16_binary_multilayer_conv_cosine_${size}" | sort | tail -n 1)
+done
+for label in cnn_384 dino_384 dino_512 dino_768; do
+  run="${benchmark_runs[$label]}"
+  .venv/bin/python -m phytopathology.benchmark_inference \
+    --config "${run}/config.yaml" \
+    --checkpoint "${run}/best.pt" \
+    --batch-size 1 \
+    --warmup 20 \
+    --repeats 100 \
+    --output "artifacts/benchmarks/${label}.json"
+done
