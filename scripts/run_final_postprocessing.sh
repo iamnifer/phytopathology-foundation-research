@@ -55,6 +55,13 @@ dino_seed42="${multilayer_runs[42]}"
   --per-page 8 \
   --output-dir artifacts/error_atlas/dino_seed42
 
+.venv/bin/python -m phytopathology.render_dino_sam_panel \
+  --dino-config "${dino_seed42}/config.yaml" \
+  --dino-checkpoint "${dino_seed42}/best.pt" \
+  --sam-model models/sam-vit-base \
+  --per-image "${dino_seed42}/analysis_val_counts/per_image.csv" \
+  --output artifacts/comparison/dino_sam_cases.png
+
 for model in dino cnn; do
   if [[ "${model}" == "dino" ]]; then
     run="${dino_seed42}"
