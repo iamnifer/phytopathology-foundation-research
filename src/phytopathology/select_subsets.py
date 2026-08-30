@@ -151,6 +151,13 @@ def main() -> None:
                 "pool_size": len(names),
                 "samples": names[selected].tolist(),
             }
+            if method == "kmeans":
+                manifest["selection_config"] = {
+                    "algorithm": "spherical_kmeans",
+                    "distance": "cosine",
+                    "iterations": 30,
+                    "restarts": 3,
+                }
             path = args.output_dir / f"{method}_seed{args.seed}_{budget:g}.json"
             path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
             print(f"{path}: {count} samples")
