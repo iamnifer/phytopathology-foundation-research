@@ -64,7 +64,8 @@ k-means/k-medoids grid.
 - [x] Извлечь и закешировать DINOv3 image descriptors из patch embeddings.
 - [x] Подготовить nested random sampling subsets.
 - [x] Подготовить nested stratified random subsets по image-level metadata.
-- [ ] k-means representatives / k-medoids.
+- [ ] Сферический k-means: представители кластеров на 10/25%, три запуска
+      (поставлено в очередь после обязательной финальной постобработки).
 - [x] Подготовить nested farthest-first / greedy k-center subsets.
 - [x] Построить seed-42 curves для random/stratified/farthest-first на
       1/5/10/25/50% train; test не использован.

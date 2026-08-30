@@ -15,7 +15,7 @@ else
   budgets=("$@")
 fi
 case "$method" in
-  random|stratified|farthest) ;;
+  random|stratified|farthest|kmeans) ;;
   *) echo "Unknown method: $method" >&2; exit 2 ;;
 esac
 

@@ -107,6 +107,11 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
 4. Record compute cost, rewrite the report according to supervisor review and
    only then decide whether one final test evaluation is defensible.
 
+One additional, bounded data-selection experiment is queued after all mandatory
+postprocessing: spherical k-means cluster representatives at 10% and 25% for
+seeds 42/43/44. It directly tests whether typical representatives avoid the
+outlier bias observed for farthest-first; do not expand this into a broad grid.
+
 Do not spend the deadline window on SAM fine-tuning, DINO→SAM, uncertainty,
 partial unfreezing, ViT-L+conv or a broad clustering grid unless all mandatory
 review items are finished.
