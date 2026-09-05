@@ -95,6 +95,24 @@ for size in 512 768; do
     --output-dir "${run}/native_val"
 done
 
+.venv/bin/python -m phytopathology.bootstrap_compare \
+  --baseline "${dino_seed42}/native_val/per_image.csv" \
+  --candidate "${cnn_seed42}/native_val/per_image.csv" \
+  --iterations 10000 \
+  --seed 2026 \
+  --output artifacts/bootstrap/cnn_vs_dino_seed42_native.json
+
+for size in 512 768; do
+  run=$(find runs -maxdepth 1 -type d \
+    -name "*_dinov3_vitb16_binary_multilayer_conv_cosine_${size}" | sort | tail -n 1)
+  .venv/bin/python -m phytopathology.bootstrap_compare \
+    --baseline "${dino_seed42}/native_val/per_image.csv" \
+    --candidate "${run}/native_val/per_image.csv" \
+    --iterations 10000 \
+    --seed 2026 \
+    --output "artifacts/bootstrap/dino_${size}_vs_384_native.json"
+done
+
 declare -A benchmark_runs=(
   [cnn_384]="${cnn_seed42}"
   [dino_384]="${dino_seed42}"
