@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import platform
@@ -58,8 +59,27 @@ def environment() -> dict[str, object]:
         ).strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         commit = None
+    try:
+        dirty = bool(
+            subprocess.check_output(
+                ["git", "status", "--porcelain", "--untracked-files=no"],
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        dirty = None
+    digest = hashlib.sha256()
+    source_files = sorted(Path("src").rglob("*.py"))
+    if Path("pyproject.toml").is_file():
+        source_files.append(Path("pyproject.toml"))
+    for path in source_files:
+        digest.update(path.as_posix().encode())
+        digest.update(path.read_bytes())
     return {
         "git_commit": commit,
+        "git_dirty": dirty,
+        "source_snapshot_sha256": digest.hexdigest(),
         "python": platform.python_version(),
         "torch": torch.__version__,
         "cuda_runtime": torch.version.cuda,
