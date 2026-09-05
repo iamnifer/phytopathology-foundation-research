@@ -40,14 +40,23 @@ data/
 │   ├── plantseg_v2.zip  # MD5 c321381894575e5dca83686d125fe2cd
 │   └── plantseg_v3.zip  # MD5 9458f4fb61d026df1580ce437df0b63a
 ├── plantseg_v2/         # legacy: train/test, старая metadata с дефектом
-└── plantseg_v3/         # основной: train/val/test и Metadatav2.csv
+├── plantseg_v3/         # основной: train/val/test и Metadatav2.csv
+└── plantwild_hf/        # metadata и healthy test для внешней проверки
 models/
-└── dinov3-vitb16-pretrain-lvd1689m/
+├── dinov3-vitb16-pretrain-lvd1689m/
+├── dinov3-vitl16-pretrain-lvd1689m/
+└── sam-vit-base/
 ```
 
 PlantSeg v3 содержит 7916/1247/2295 изображений в train/val/test. В каждой
 проверенной PNG-маске встречаются фон `0` и один disease class; по датасету
 используются IDs `0..115`.
+
+Из PlantWild v1 подготовлен manifest 7840 здоровых изображений 30 видов
+растений: 5510/774/1556 в train/val/test. На ВМ загружены только 1556 test-
+изображений (около 383 MB), используемых для внешней оценки ложных тревог.
+Manifest и загрузка воспроизводятся командой
+`python -m phytopathology.prepare_plantwild_healthy`.
 
 Веса Hugging Face gated и без пользовательского токена возвращают HTTP 401.
 На ВМ использована публичная копия ModelScope:
@@ -56,6 +65,12 @@ PlantSeg v3 содержит 7916/1247/2295 изображений в train/val/
 modelscope download --model facebook/dinov3-vitb16-pretrain-lvd1689m \
   --local_dir models/dinov3-vitb16-pretrain-lvd1689m
 ```
+
+Старые установщики и черновые рендеры вынесены из репозитория ВМ в
+`/home/iamnifer/phytopathology-workspace-archive-20260916`. Карантин ошибочной
+синхронизации сохранён отдельно в
+`/home/iamnifer/sync-mistake-quarantine-20260916`; оба каталога можно удалить
+после сдачи, если артефакты точно не нужны.
 
 ## Сборка отчёта
 
