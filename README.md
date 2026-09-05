@@ -119,6 +119,15 @@ python -m phytopathology.train --config configs/example.yaml \
 `--epoch-samples` сохраняет одинаковое число optimizer steps на эпоху для
 полной выборки и её подмножеств.
 
+Внешняя проверка ложных тревог использует только официальную test-часть
+здоровых классов PlantWild v1. Manifest и нужные изображения воспроизводятся
+отдельно от PlantSeg:
+
+```bash
+python -m phytopathology.prepare_plantwild_healthy \
+  --dataset-root data/plantwild_hf --download-split test
+```
+
 Каждый запуск создаёт отдельный каталог в `runs/`: resolved-конфиг,
 информацию об окружении, метрики JSONL и лучший checkpoint. `runs/` не хранится
 в Git; итоговые числа и выводы переносятся в `docs/experiments/`.
