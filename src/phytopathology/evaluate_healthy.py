@@ -122,6 +122,13 @@ def main() -> None:
             "source": "PlantWild v1 healthy classes",
             "checkpoint": str(args.checkpoint),
             "image_size": config.data.image_size,
+            "by_healthy_class": [
+                {
+                    "healthy_class": label,
+                    **summarize(group["predicted_lesion_fraction"].to_numpy()),
+                }
+                for label, group in frame.groupby("healthy_class", sort=True)
+            ],
         }
     )
     (args.output_dir / "summary.json").write_text(
