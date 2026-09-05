@@ -131,8 +131,9 @@ review items are finished.
   state `resize_mode` and augmentation preset explicitly.
 - `report/coursework.tex` has been moved into the repository but still describes
   an earlier stage; synchronize it only after the current experiment series.
-- The unchanged legacy notebook remains in the root as provenance, not as the
-  production training path. Eventually move it to `notebooks/archive/`.
+- The unchanged legacy notebook is archived at
+  `notebooks/archive/legacy_dinov3_experiment.ipynb` as provenance, not as the
+  production training path.
 - The coursework source is autonomous under `report/`: build it with
   `latexmk coursework.tex` from that directory. XeLaTeX/biber are installed on
   the VM. Title-page metadata in `report/metadata.tex` was copied from the
