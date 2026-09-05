@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+cd "${project_root}"
+
 if [[ $# -lt 2 ]]; then
   echo "Usage: $0 METHOD SEED [BUDGET ...]" >&2
   exit 2

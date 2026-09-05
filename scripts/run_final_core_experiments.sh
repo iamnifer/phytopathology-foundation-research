@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd /home/iamnifer/phytopathology-foundation-research
+project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+cd "${project_root}"
 
 for seed in 42 43 44; do
   .venv/bin/python -m phytopathology.train \

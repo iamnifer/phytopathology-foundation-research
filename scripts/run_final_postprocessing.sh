@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd /home/iamnifer/phytopathology-foundation-research
+project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+cd "${project_root}"
 
 declare -A single_runs=(
   [42]="runs/20260914T114031Z_dinov3_vitb16_binary_conv_cosine"
