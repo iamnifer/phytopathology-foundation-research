@@ -13,6 +13,11 @@ declare -A multilayer_runs=(
   [43]="runs/20260914T110651Z_dinov3_vitb16_binary_multilayer_conv_cosine"
   [44]="runs/20260914T112340Z_dinov3_vitb16_binary_multilayer_conv_cosine"
 )
+declare -A cnn_runs=(
+  [42]="runs/20260916T131956Z_deeplabv3_resnet50_binary_pretrained"
+  [43]="runs/20260916T135548Z_deeplabv3_resnet50_binary_pretrained"
+  [44]="runs/20260916T143136Z_deeplabv3_resnet50_binary_pretrained"
+)
 
 for seed in 42 43 44; do
   for run in "${single_runs[$seed]}" "${multilayer_runs[$seed]}"; do
@@ -30,21 +35,23 @@ for seed in 42 43 44; do
     --output "artifacts/bootstrap/multilayer_vs_single_seed${seed}.json"
 done
 
-cnn_seed42="runs/20260916T131956Z_deeplabv3_resnet50_binary_pretrained"
+cnn_seed42="${cnn_runs[42]}"
 dino_seed42="${multilayer_runs[42]}"
 
-.venv/bin/python -m phytopathology.analyze_predictions \
-  --config "${cnn_seed42}/config.yaml" \
-  --checkpoint "${cnn_seed42}/best.pt" \
-  --split val \
-  --output-dir "${cnn_seed42}/analysis_val_counts"
-
-.venv/bin/python -m phytopathology.bootstrap_compare \
-  --baseline "${dino_seed42}/analysis_val_counts/per_image.csv" \
-  --candidate "${cnn_seed42}/analysis_val_counts/per_image.csv" \
-  --iterations 10000 \
-  --seed 2026 \
-  --output artifacts/bootstrap/cnn_vs_dino_seed42.json
+for seed in 42 43 44; do
+  cnn_run="${cnn_runs[$seed]}"
+  .venv/bin/python -m phytopathology.analyze_predictions \
+    --config "${cnn_run}/config.yaml" \
+    --checkpoint "${cnn_run}/best.pt" \
+    --split val \
+    --output-dir "${cnn_run}/analysis_val_counts"
+  .venv/bin/python -m phytopathology.bootstrap_compare \
+    --baseline "${multilayer_runs[$seed]}/analysis_val_counts/per_image.csv" \
+    --candidate "${cnn_run}/analysis_val_counts/per_image.csv" \
+    --iterations 10000 \
+    --seed 2026 \
+    --output "artifacts/bootstrap/cnn_vs_dino_seed${seed}.json"
+done
 
 .venv/bin/python -m phytopathology.render_error_atlas \
   --config "${dino_seed42}/config.yaml" \
