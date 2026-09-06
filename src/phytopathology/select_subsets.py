@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import time
 from pathlib import Path
 
 import numpy as np
@@ -134,21 +135,26 @@ def main() -> None:
     for method in args.methods:
         if method not in {*order_methods, "kmeans"}:
             raise ValueError(f"unknown selection method: {method}")
+        order_started = time.perf_counter()
         order = order_methods[method]() if method in order_methods else None
+        order_seconds = time.perf_counter() - order_started
         for budget in args.budgets:
             if not 0 < budget < 1:
                 raise ValueError("budgets must lie strictly between 0 and 1")
             count = max(1, math.ceil(len(names) * budget))
-            selected = (
-                kmeans_representatives(descriptors, count, args.seed)
-                if method == "kmeans"
-                else order[:count]
-            )
+            if method == "kmeans":
+                selection_started = time.perf_counter()
+                selected = kmeans_representatives(descriptors, count, args.seed)
+                selection_seconds = time.perf_counter() - selection_started
+            else:
+                selected = order[:count]
+                selection_seconds = order_seconds
             manifest = {
                 "method": method,
                 "seed": args.seed if method in {"random", "stratified", "kmeans"} else None,
                 "budget_fraction": budget,
                 "pool_size": len(names),
+                "selection_seconds": selection_seconds,
                 "samples": names[selected].tolist(),
             }
             if method == "kmeans":
