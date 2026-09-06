@@ -33,12 +33,16 @@ def summarize_subset(pool: pd.DataFrame, selected: pd.DataFrame) -> dict[str, ob
     selected_disease = selected["Disease"].astype(str).value_counts(normalize=True)
     pool_plant = pool["Plant"].astype(str).value_counts(normalize=True)
     selected_plant = selected["Plant"].astype(str).value_counts(normalize=True)
+    pool_source = pool["source"].astype(str).value_counts(normalize=True)
+    selected_source = selected["source"].astype(str).value_counts(normalize=True)
     return {
         "images": len(selected),
         "unique_diseases": int(selected["Disease"].nunique()),
         "unique_plants": int(selected["Plant"].nunique()),
+        "unique_sources": int(selected["source"].nunique()),
         "disease_distribution_total_variation": total_variation(pool_disease, selected_disease),
         "plant_distribution_total_variation": total_variation(pool_plant, selected_plant),
+        "source_distribution_total_variation": total_variation(pool_source, selected_source),
         "mask_ratio_mean": float(ratios.mean()),
         "mask_ratio_median": float(ratios.median()),
         "mask_ratio_q10": float(ratios.quantile(0.1)),
@@ -58,9 +62,8 @@ def render_contact_sheet(
     for axis, (_, sample) in zip(axes.flat, selected.iloc[:count].iterrows(), strict=False):
         with Image.open(image_dir / str(sample["Name"])) as source:
             axis.imshow(source.convert("RGB"))
-        axis.set_title(
-            f"{sample['Plant']}\nпоражение {100 * float(sample['Mask ratio']):.1f}%", fontsize=8
-        )
+        sample_title = f"{sample['Plant']}\nпоражение {100 * float(sample['Mask ratio']):.1f}%"
+        axis.set_title(sample_title, fontsize=8)
         axis.axis("off")
     for axis in axes.flat[count:]:
         axis.axis("off")
@@ -101,6 +104,7 @@ def main() -> None:
                 "random": "Случайный отбор",
                 "stratified": "Стратифицированный случайный отбор",
                 "farthest": "Жадный отбор наиболее удалённых изображений",
+                "kmeans": "Представители кластеров сферического k-means",
             }[manifest["method"]],
             args.output_dir / f"{key}_contact_sheet.png",
         )
