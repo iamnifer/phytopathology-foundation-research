@@ -96,8 +96,8 @@ def main() -> None:
             axis.set_title(
                 f"#{len(manifest) + 1} {Path(name).name}\n"
                 f"IoU={record['foreground_iou']:.3f}; "
-                f"GT={record['gt_foreground_fraction']:.1%}; "
-                f"pred={record['pred_foreground_fraction']:.1%}",
+                f"эталон={record['gt_foreground_fraction']:.1%}; "
+                f"прогноз={record['pred_foreground_fraction']:.1%}",
                 fontsize=9,
             )
             axis.axis("off")
@@ -117,9 +117,9 @@ def main() -> None:
             axis.axis("off")
         figure.legend(
             handles=(
-                Patch(color=(0.10, 0.85, 0.10), label="TP"),
-                Patch(color=(1.00, 0.10, 0.10), label="FP"),
-                Patch(color=(0.10, 0.35, 1.00), label="FN"),
+                Patch(color=(0.10, 0.85, 0.10), label="Верно"),
+                Patch(color=(1.00, 0.10, 0.10), label="Ложное срабатывание"),
+                Patch(color=(0.10, 0.35, 1.00), label="Пропуск"),
             ),
             loc="lower center",
             ncol=3,
