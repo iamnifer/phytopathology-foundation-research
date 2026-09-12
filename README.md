@@ -78,6 +78,8 @@ DINOv3 и SAM на семантическую сегментацию забол�
 [docs/supervisor_update_2026-09.md](docs/supervisor_update_2026-09.md).
 Первая кривая эффективности данных зафиксирована в
 [docs/experiments/015_label_efficiency_seed42.md](docs/experiments/015_label_efficiency_seed42.md).
+Повторы DeepLabV3 и их вычислительная стоимость записаны в
+[docs/experiments/018_deeplabv3_baseline.md](docs/experiments/018_deeplabv3_baseline.md).
 
 ## Быстрый старт
 
