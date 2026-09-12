@@ -12,5 +12,13 @@ for seed in 42 43 44; do
     --methods kmeans \
     --budgets 0.1 0.25 \
     --seed "${seed}"
+  .venv/bin/python -m phytopathology.analyze_subsets \
+    --metadata data/plantseg_v3/Metadatav2.csv \
+    --data-root data/plantseg_v3 \
+    --manifests \
+      "subsets/seed${seed}/kmeans_seed${seed}_0.1.json" \
+      "subsets/seed${seed}/kmeans_seed${seed}_0.25.json" \
+    --output-dir "artifacts/subset_analysis_kmeans_seed${seed}" \
+    --num-images 16
   scripts/run_label_efficiency.sh kmeans "${seed}" 0.1 0.25
 done
