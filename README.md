@@ -74,7 +74,7 @@ DINOv3 и SAM на семантическую сегментацию забол�
 и [docs/experiments/010_validation_error_analysis.md](docs/experiments/010_validation_error_analysis.md).
 Лучший новый validation run описан в
 [docs/experiments/011_multilayer_cosine.md](docs/experiments/011_multilayer_cosine.md),
-а готовая сводка для обсуждения — в
+а историческая сводка для обсуждения до ревью v1 — в
 [docs/supervisor_update_2026-09.md](docs/supervisor_update_2026-09.md).
 Первая кривая эффективности данных зафиксирована в
 [docs/experiments/015_label_efficiency_seed42.md](docs/experiments/015_label_efficiency_seed42.md).
