@@ -40,10 +40,15 @@ DINOv3 и SAM на семантическую сегментацию забол�
   от random лишь на +0.0015/+0.0025 IoU, а farthest-first хуже на
   -0.0159/-0.0097. Анализ состава показывает, что farthest-first выбирает
   выбросы и сильнее искажает распределения растений и болезней.
-- В финальной очереди выполняются три pretrained DeepLabV3-ResNet50, scratch
-  control и DINOv3 при 512/768 px. После них автоматически запускаются парный
-  bootstrap, оценка на исходной сетке аннотаций, атлас 64 ошибок и проверка
-  ложных тревог на 1556 здоровых изображениях PlantWild v1.
+- Три запуска полностью дообучаемого DeepLabV3-ResNet50 с ImageNet-инициализацией
+  дали validation disease IoU `0.6690 ± 0.0008` против `0.6519 ± 0.0062` у
+  DINOv3 с замороженным энкодером. Согласованный контроль со случайной
+  инициализацией выполняется.
+- После scratch-контроля выполнятся DINOv3 при 512/768 px, затем автоматически
+  запускаются парный bootstrap, оценка на исходной сетке аннотаций, атлас 64
+  ошибок и проверка
+  ложных тревог на 1556 здоровых изображениях PlantWild v1. Последней идёт
+  ограниченная серия сферического k-means при 10/25% разметки.
 - Вычислительная ВМ подготовлена: A100 80 GB, 116 GB RAM; веса ViT-B/16 и
   ViT-L/16 получены через ModelScope.
 - Финальный отчёт перестроен вокруг общей исследовательской задачи и
@@ -98,21 +103,25 @@ python -m phytopathology.train --config configs/dinov3_vitb16_linear.yaml \
   --data-root /path/to/plantsegv3
 ```
 
-Seed YAML-конфигурации можно переопределить без её копирования:
+Начальное значение генератора из YAML-конфигурации можно переопределить без её
+копирования:
 
 ```bash
-python -m phytopathology.train --config configs/example.yaml --seed 43
+python -m phytopathology.train \
+  --config configs/dinov3_vitb16_binary_multilayer_conv_cosine.yaml --seed 43
 ```
 
 Для экспериментов с бюджетом разметки сначала кэшируются frozen-признаки и
 создаются точные manifests подмножеств:
 
 ```bash
-python -m phytopathology.extract_descriptors --config configs/example.yaml \
+python -m phytopathology.extract_descriptors \
+  --config configs/dinov3_vitb16_binary_multilayer_conv_cosine.yaml \
   --output features/train.npz
 python -m phytopathology.select_subsets --features features/train.npz \
   --metadata data/plantseg_v3/Metadatav2.csv --output-dir subsets/seed42
-python -m phytopathology.train --config configs/example.yaml \
+python -m phytopathology.train \
+  --config configs/dinov3_vitb16_binary_multilayer_conv_cosine.yaml \
   --subset-file subsets/seed42/farthest_seed42_0.1.json --epoch-samples 7916
 ```
 
