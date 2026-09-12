@@ -38,6 +38,8 @@ done
 
 cnn_seed42="${cnn_runs[42]}"
 dino_seed42="${multilayer_runs[42]}"
+scratch_seed42=$(find runs -maxdepth 1 -type d \
+  -name "*_deeplabv3_resnet50_binary_scratch" | sort | tail -n 1)
 
 for seed in 42 43 44; do
   cnn_run="${cnn_runs[$seed]}"
@@ -53,6 +55,18 @@ for seed in 42 43 44; do
     --seed 2026 \
     --output "artifacts/bootstrap/cnn_vs_dino_seed${seed}.json"
 done
+
+.venv/bin/python -m phytopathology.analyze_predictions \
+  --config "${scratch_seed42}/config.yaml" \
+  --checkpoint "${scratch_seed42}/best.pt" \
+  --split val \
+  --output-dir "${scratch_seed42}/analysis_val_counts"
+.venv/bin/python -m phytopathology.bootstrap_compare \
+  --baseline "${scratch_seed42}/analysis_val_counts/per_image.csv" \
+  --candidate "${cnn_seed42}/analysis_val_counts/per_image.csv" \
+  --iterations 10000 \
+  --seed 2026 \
+  --output artifacts/bootstrap/cnn_pretrained_vs_scratch_seed42.json
 
 .venv/bin/python -m phytopathology.render_error_atlas \
   --config "${dino_seed42}/config.yaml" \
