@@ -62,6 +62,11 @@ All values below use 384×384 stretched inputs unless explicitly noted.
   positive point gives disease IoU 0.3624; exact GT box gives 0.4659. Box recall
   is 0.8835 but precision 0.4964. These are upper-bound diagnostics, not
   automatic segmentation results.
+- Fully fine-tuned DeepLabV3-ResNet50 with an ImageNet-pretrained encoder gives
+  validation disease IoU 0.6681/0.6693/0.6694 for seeds 42/43/44, or
+  0.6690 ± 0.0008 (sample SD). It is about 0.0171 above frozen DINOv3 while
+  training 39.63M rather than 7.08M parameters; paired bootstrap and the
+  matched scratch-initialization control are still running.
 - Seed-42 label-efficiency curves are complete for 1/5/10/25/50% budgets with
   matched optimizer steps. Repeats at 10/25% are complete: stratified minus
   random is only +0.0015/+0.0025, while farthest-first minus random is
@@ -97,7 +102,8 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
 
 ## Current experiment queue
 
-1. Finish three pretrained DeepLabV3-ResNet50 runs plus one scratch control.
+1. Three pretrained DeepLabV3-ResNet50 runs are complete; finish the matched
+   scratch-initialization control now running.
 2. Run matched DINOv3 resolution controls at 512 and 768 px.
 3. Add 10,000-repeat paired image bootstrap, log-budget AULC excluding the
    shared 100% endpoint, selected-set composition, visual panels and a manual
