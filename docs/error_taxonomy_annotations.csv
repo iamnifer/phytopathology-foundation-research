@@ -1,0 +1,65 @@
+rank,image,small_lesion,multiple_foci,diffuse_boundary,non_leaf_organ,background_confusion,illumination_or_blur,annotation_issue,primary_error,comment
+1,banana_anthracnose_Baidu_0115.jpg,1,1,0,1,1,1,0,mixed,мелкие очаги на плодах; ложные срабатывания на руке и сухом фоне
+2,wheat_head_scab_Bing_0124.jpg,1,0,0,0,0,0,0,oversegmentation,малая цель и крупная ложная маска на листе
+3,wheat_powdery_mildew_Baidu_0309.jpg,1,1,1,0,0,0,0,oversegmentation,диффузный налёт и много ложных пикселей
+4,citrus_canker_114.jpg,1,0,0,0,0,0,0,miss,очень малые разрозненные пятна
+5,apple_mosaic_virus_19.jpg,0,1,1,0,0,0,0,miss,мозаичные нечёткие области полностью пропущены
+6,eggplant_cercospora_leaf_spot_google_0050.jpg,0,1,0,1,0,1,0,miss,поражение плода на изображении низкого качества
+7,blueberry_anthracnose_Bing_0108.jpg,1,0,0,1,0,0,0,miss,мелкое поражение плода
+8,potato_early_blight_9.jpg,1,1,0,0,0,0,0,oversegmentation,мелкий эталон и много ложных очагов
+9,apple_scab_17.jpg,1,0,0,0,0,0,0,oversegmentation,ложная маска вокруг малого очага
+10,apple_scab_45.jpg,0,1,0,1,0,0,0,miss,много мелких пятен на плодах
+11,lettuce_mosaic_virus_google_0170.jpg,0,1,1,0,0,0,0,mixed,диффузная мозаика; пропуск и ложные области
+12,zucchini_yellow_mosaic_virus_google_0011.jpg,0,1,1,0,0,0,0,oversegmentation,мозаика и многочисленные ложные очаги
+13,citrus_greening_disease_google_0226.jpg,0,1,0,0,0,0,0,miss,множество пропущенных областей на листьях
+14,apple_rust_1.jpg,0,1,0,0,0,0,0,miss,много мелких пропущенных пятен
+15,grapevine_leafroll_disease_86.jpg,0,1,1,0,1,0,0,mixed,диффузные листья и ложные области на фоне
+16,ginger_sheath_blight_38.jpg,0,0,0,1,0,0,1,miss,крупная маска влагалища почти полностью пропущена; эталон трудно отделить от фона
+17,apple_scab_11.jpg,0,1,0,1,0,0,0,miss,много мелких пятен на плодах
+18,carrot_cavity_spot_google_0199.jpg,0,1,0,1,0,0,0,miss,мелкие повреждения корнеплода
+19,soybean_downy_mildew_Bing_0050.jpg,0,0,1,0,0,0,0,oversegmentation,текстура всего листа принята за поражение
+20,corn_rust_google_0017.jpg,0,0,0,0,0,0,0,oversegmentation,почти вся поверхность листа ошибочно выделена
+21,rice_blast_69.jpg,1,1,0,0,0,0,0,oversegmentation,малая цель среди множества тонких листьев
+22,lettuce_mosaic_virus_7.jpg,0,0,1,0,0,0,1,oversegmentation,модель выделяет почти весь визуально изменённый лист; возможна неполнота маски
+23,rice_blast_54.jpg,0,1,0,0,0,1,0,mixed,мелкие очаги на зашумлённом нерезком фоне
+24,soybean_downy_mildew_Bing_0150.jpg,0,1,1,0,0,0,0,oversegmentation,диффузные изменения и ложная маска на жилках
+25,cucumber_powdery_mildew_27.jpg,1,1,1,0,0,0,0,oversegmentation,малая диффузная цель и крупные ложные области
+26,rice_blast_google_0076.jpg,1,1,0,0,0,1,0,oversegmentation,низкое качество и много ложных очагов
+27,banana_anthracnose_Baidu_0019.jpg,0,1,0,1,0,1,0,miss,много мелких пятен на плодах; сильные тени
+28,garlic_rust_google_0003.jpg,0,1,0,0,0,0,0,miss,множество мелких пропущенных пятен
+29,apple_rust_84.jpg,1,1,0,0,0,0,0,miss,малая многоочаговая маска
+30,celery_anthracnose_google_0039.jpg,0,0,0,1,0,1,0,miss,крупное поражение черешков почти пропущено
+31,soybean_downy_mildew_Bing_0041.jpg,1,1,1,0,0,0,0,oversegmentation,малая диффузная цель; ложные полосы вдоль жилок
+32,carrot_cercospora_leaf_blight_Bing_0037.jpg,0,1,0,0,0,1,0,miss,тонкие листья и искусственный фон; маска пропущена
+33,celery_anthracnose_google_0015.jpg,0,0,0,0,0,1,0,miss,нерезкая маска на деформированных листьях
+34,zucchini_yellow_mosaic_virus_google_0089.jpg,0,0,1,0,0,0,0,miss,диффузная мозаика большой площади
+35,zucchini_yellow_mosaic_virus_56.jpg,0,0,1,0,0,0,1,oversegmentation,диффузная мозаика; предсказана значительно большая площадь
+36,ginger_leaf_spot_google_0137.jpg,0,1,0,0,1,1,0,oversegmentation,размытые листья и сухой фон вызывают ложные маски
+37,banana_anthracnose_Baidu_0021.jpg,0,1,0,1,0,0,0,mixed,мелкие пятна на плодах; пропуски и ложные очаги
+38,cherry_leaf_spot_google_0060.jpg,0,1,0,0,0,0,0,mixed,множество мелких пятен и ошибки границ
+39,wheat_stripe_rust_Baidu_0168.jpg,1,1,0,0,0,1,0,miss,малые очаги на тонких листьях в сложном кадре
+40,tobacco_blue_mold_Bing_0129.jpg,0,0,1,0,0,0,0,oversegmentation,крупная ложная маска вокруг диффузного поражения
+41,ginger_sheath_blight_3.jpg,0,1,0,0,1,1,0,miss,малые очаги на фоне почвы и камней
+42,cherry_leaf_spot_google_0234.jpg,0,0,1,0,0,0,0,oversegmentation,жёлтая ткань листа частично принята за поражение
+43,carrot_alternaria_leaf_blight_Bing_0015.jpg,0,1,0,0,1,1,0,oversegmentation,низкое разрешение; ложные маски на светлом фоне
+44,raspberry_fire_blight_Bing_0017.jpg,0,0,0,1,0,0,0,miss,обширная маска на побеге и листьях почти полностью пропущена
+45,bell_pepper_frogeye_leaf_spot_Bing_0215.jpg,0,1,1,0,0,0,0,mixed,мелкие пятна на пожелтевших листьях
+46,citrus_canker_56.jpg,0,1,0,1,0,1,0,miss,мелкие очаги на плодах и листьях в тёмном кадре
+47,ginger_leaf_spot_google_0045.jpg,0,1,0,0,0,0,0,mixed,многоочаговая маска; пропуски и ложные области
+48,celery_anthracnose_2.jpg,0,0,0,0,1,0,0,oversegmentation,ложная маска на листьях и фоне вокруг черешков
+49,raspberry_leaf_spot_Bing_0044.jpg,0,1,1,0,0,0,0,oversegmentation,ложные области на диффузной текстуре листьев
+50,potato_early_blight_google_0022.jpg,0,1,0,0,1,0,0,oversegmentation,обширные ложные области на листьях и тёмном фоне
+51,tomato_leaf_mold_google_0056.jpg,0,0,1,0,0,0,1,oversegmentation,почти весь визуально изменённый лист предсказан; эталон заметно уже
+52,tomato_mosaic_virus_19.jpg,0,0,1,0,0,0,1,oversegmentation,мозаика видна на большей площади чем задаёт эталон
+53,garlic_rust_73.jpg,0,1,1,0,0,0,1,oversegmentation,ржавчина видна на большей площади чем размечено
+54,carrot_alternaria_leaf_blight_Bing_0087.jpg,0,1,0,0,0,0,0,miss,тонкие многочисленные листья почти полностью пропущены
+55,bell_pepper_frogeye_leaf_spot_Bing_0005.jpg,0,1,0,0,0,0,0,mixed,много мелких пятен и ошибки границ
+56,blueberry_rust_3.jpg,1,1,0,0,0,0,0,mixed,малая многоочаговая маска
+57,banana_bunchy_top_Bing_0216.jpg,0,1,1,0,0,0,0,mixed,диффузные изменения на многих листьях
+58,bean_rust_google_0172.jpg,0,1,1,0,0,0,0,miss,крупная размытая маска среди множества листьев
+59,coffee_brown_eye_spot_Bing_0210.jpg,0,1,0,1,0,1,0,mixed,мелкие очаги на ягодах и листьях; смаз движения
+60,blueberry_scorch_Bing_0001.jpg,0,0,0,0,0,0,1,oversegmentation,скриншот документа вместо фотографии; эталон сомнителен
+61,wheat_bacterial_leaf_streak_(black_chaff)_black_chaff (12).jpg,0,1,0,0,1,0,0,oversegmentation,много ложных областей на тонком фоне колосьев
+62,tobacco_frogeye_leaf_spot_Bing_0040.jpg,0,1,1,0,0,0,0,oversegmentation,много кольцевых пятен; границы сильно расширены
+63,rice_sheath_blight_38.jpg,0,1,0,0,0,1,0,miss,тонкие листья и сложный водный фон
+64,broccoli_alternaria_leaf_spot_Google_0240.jpg,0,1,0,1,0,0,0,oversegmentation,очаги на соцветии; ложная маска вокруг цели

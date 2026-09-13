@@ -68,11 +68,23 @@ All values below use 384×384 stretched inputs unless explicitly noted.
   training 39.63M rather than 7.08M parameters. The matched seed-42 scratch
   control gives 0.5442 versus 0.6681 pretrained, a +0.1239 fixed-recipe
   transfer effect; paired image bootstrap is queued.
-- The matched seed-42 DINOv3 resolution control at 512 px gives resized-grid
-  disease IoU 0.6644 (epoch 25) versus 0.6569 at 384 px, a +0.0075 point
-  difference. Runtime is 1450.8 s and peak allocated CUDA memory 1.72 GiB.
-  Do not interpret the gain until the queued original-annotation-grid paired
-  bootstrap is complete.
+- The matched seed-42 DINOv3 resolution controls give resized-grid disease IoU
+  0.6569/0.6644/0.6671 at 384/512/768 px. The 768-px run selected epoch 21,
+  took 3011.7 s and peaked at 3.31 GiB allocated CUDA memory. Do not interpret
+  these resized-grid gains alone. On the original annotation grid the scores
+  are 0.6194/0.6276/0.6323; the paired 768-vs-384 difference is +0.0129 with
+  95% bootstrap CI [-0.0049, 0.0323], so it is promising but inconclusive.
+- On the original annotation grid, seed-42 CNN versus DINO is +0.0077 with
+  95% CI [-0.0212, 0.0373], unlike the significant resized-grid comparison.
+  Explicitly state that the small ranking difference depends on evaluation grid.
+- External healthy PlantWild v1 evaluation found mean predicted lesion area
+  6.76% for DINO and 7.72% for CNN; 49.4% and 70.8% of images respectively
+  exceed 1% predicted lesion area. This is a domain-shift diagnostic, not an
+  in-domain specificity estimate.
+- Manual multi-label review of the 64 worst DINO cases found multiple foci in
+  45, diffuse boundaries in 22, acquisition artifacts in 15, small lesions in
+  14, non-leaf targets in 14, background confusion in 8 and possible annotation
+  issues in 7. The row-level record is `docs/error_taxonomy_annotations.csv`.
 - Seed-42 label-efficiency curves are complete for 1/5/10/25/50% budgets with
   matched optimizer steps. Repeats at 10/25% are complete: stratified minus
   random is only +0.0015/+0.0025, while farthest-first minus random is
@@ -110,20 +122,18 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
 
 1. Three pretrained DeepLabV3-ResNet50 runs and the matched scratch control are
    complete.
-2. Finish the matched DINOv3 resolution controls: 512 is complete and 768 is
-   now running with the same batch size and optimizer-step count as 384.
-3. Add 10,000-repeat paired image bootstrap, log-budget AULC excluding the
-   shared 100% endpoint, selected-set composition, visual panels and a manual
-   taxonomy of 50--100 hard cases. `scripts/run_final_postprocessing.sh` is
-   queued after core training and also evaluates all resolutions on each
-   annotation's original pixel grid.
-4. Record compute cost, rewrite the report according to supervisor review and
-   only then decide whether one final test evaluation is defensible.
+2. The matched resolution controls, original-grid evaluation, paired bootstrap,
+   healthy-set diagnostic, inference benchmarks, visual panels and manual error
+   taxonomy are complete and incorporated into the report.
+3. Finish the bounded spherical k-means series at 10% and 25% for three seeds;
+   it is the only remaining experiment queue.
+4. Incorporate k-means, perform a final number-consistency audit, rebuild the
+   PDF and only then decide whether one final test evaluation is defensible.
 
-One additional, bounded data-selection experiment is queued after all mandatory
-postprocessing: spherical k-means cluster representatives at 10% and 25% for
-seeds 42/43/44. It directly tests whether typical representatives avoid the
-outlier bias observed for farthest-first; do not expand this into a broad grid.
+The additional bounded data-selection experiment is now running: spherical
+k-means cluster representatives at 10% and 25% for seeds 42/43/44. It directly
+tests whether typical representatives avoid the outlier bias observed for
+farthest-first; do not expand this into a broad grid.
 
 Do not spend the deadline window on SAM fine-tuning, DINO→SAM, uncertainty,
 partial unfreezing, ViT-L+conv or a broad clustering grid unless all mandatory
