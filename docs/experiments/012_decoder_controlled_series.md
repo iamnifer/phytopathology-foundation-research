@@ -1,45 +1,50 @@
-# DINOv3 decoder controlled series — 2026-08-23
+# Контролируемая серия декодеров DINOv3
 
-## Question
+Дата: 2026-08-23.
 
-Is the validation gain of the four-layer convolutional decoder reproducible,
-and does it remain when training duration and cosine scheduling are controlled?
+## Вопрос
 
-## Fixed protocol
+Воспроизводится ли преимущество свёрточного декодера по четырём слоям и
+сохраняется ли оно при одинаковой длительности обучения и косинусном
+расписании скорости обучения?
 
-- PlantSeg binary disease/background segmentation;
-- frozen DINOv3 ViT-B/16, 384×384 stretched inputs;
-- 30 epochs, AdamW, learning rate 0.001, cosine decay to 1e-5;
-- checkpoint selected by validation disease/foreground IoU;
-- validation and test ground truth were not used to choose the input subset;
-- test was not evaluated in this series.
+## Фиксированный протокол
 
-## Results
+- бинарная сегментация «поражение / фон» на PlantSeg;
+- замороженный DINOv3 ViT-B/16, входы $384\times384$, растянутые до квадрата;
+- 30 эпох, AdamW, скорость обучения 0.001 с косинусным затуханием до $10^{-5}$;
+- контрольная точка выбирается по IoU поражения на валидации;
+- валидационная и тестовая разметка не используются для выбора обучающего
+  подмножества;
+- тестовая выборка в этой серии не оценивается.
 
-| Run | Seed | Features | Best epoch | Disease IoU | mIoU | Pixel AP |
+## Результаты
+
+| Запуск | Нач. значение | Признаки | Лучшая эпоха | IoU поражения | mIoU | Pixel AP |
 |---|---:|---|---:|---:|---:|---:|
-| `20260908T172349Z_dinov3_vitb16_binary_multilayer_conv_cosine` | 42 | blocks 3/6/9/12 | 25 | 0.6569 | 0.7765 | 0.8723 |
-| `20260914T110651Z_dinov3_vitb16_binary_multilayer_conv_cosine` | 43 | blocks 3/6/9/12 | 25 | 0.6538 | 0.7762 | 0.8754 |
-| `20260914T112340Z_dinov3_vitb16_binary_multilayer_conv_cosine` | 44 | blocks 3/6/9/12 | 23 | 0.6450 | 0.7705 | 0.8714 |
-| `20260914T114031Z_dinov3_vitb16_binary_conv_cosine` | 42 | last block | 23 | 0.6438 | 0.7703 | 0.8658 |
-| `20260914T122404Z_dinov3_vitb16_binary_conv_cosine` | 43 | last block | 28 | 0.6442 | 0.7705 | 0.8667 |
-| `20260914T124601Z_dinov3_vitb16_binary_conv_cosine` | 44 | last block | 21 | 0.6451 | 0.7698 | 0.8646 |
+| `20260908T172349Z_dinov3_vitb16_binary_multilayer_conv_cosine` | 42 | блоки 3/6/9/12 | 25 | 0.6569 | 0.7765 | 0.8723 |
+| `20260914T110651Z_dinov3_vitb16_binary_multilayer_conv_cosine` | 43 | блоки 3/6/9/12 | 25 | 0.6538 | 0.7762 | 0.8754 |
+| `20260914T112340Z_dinov3_vitb16_binary_multilayer_conv_cosine` | 44 | блоки 3/6/9/12 | 23 | 0.6450 | 0.7705 | 0.8714 |
+| `20260914T114031Z_dinov3_vitb16_binary_conv_cosine` | 42 | последний блок | 23 | 0.6438 | 0.7703 | 0.8658 |
+| `20260914T122404Z_dinov3_vitb16_binary_conv_cosine` | 43 | последний блок | 28 | 0.6442 | 0.7705 | 0.8667 |
+| `20260914T124601Z_dinov3_vitb16_binary_conv_cosine` | 44 | последний блок | 21 | 0.6451 | 0.7698 | 0.8646 |
 
-For the multi-layer decoder, mean disease IoU over seeds 42/43/44 is
-**0.6519 ± 0.0062** (sample standard deviation); for the last-layer decoder it
-is **0.6444 ± 0.0007**. The paired difference is **0.0075 ± 0.0069**.
+Для многослойного декодера средний IoU поражения по трём начальным значениям
+равен **0.6519 ± 0.0062** (выборочное стандартное отклонение), для декодера
+последнего слоя — **0.6444 ± 0.0007**. Парная разность равна
+**0.0075 ± 0.0069**.
 
-## Interpretation
+## Интерпретация
 
-Multi-layer features improve the three-seed mean, so the best seed-42 result is
-not explained only by the longer cosine schedule. The effect is nevertheless
-small relative to its variability: the paired improvement is 0.0131, 0.0096
-and -0.0001 on seeds 42, 43 and 44. The defensible conclusion is a modest mean
-gain with no evidence of a uniformly better result on every seed, rather than
-a decisive architectural advantage.
+Многослойные признаки повышают среднее по трём запускам, поэтому лучший
+результат с начальным значением 42 нельзя объяснить только более долгим
+обучением. Однако эффект мал относительно изменчивости: парный прирост равен
+0.0131, 0.0096 и -0.0001 для значений 42, 43 и 44. Корректный вывод — небольшой
+средний выигрыш без свидетельства равномерного преимущества в каждом запуске,
+а не решающее превосходство архитектуры.
 
-## Artifacts
+## Артефакты
 
-Resolved configs, environment snapshots, metrics histories and decoder
-checkpoints are stored under the corresponding names in the gitignored `runs/`
-directory. All runs are backed up both locally and on the research VM.
+Фактические конфигурации, снимки окружения, истории метрик и контрольные точки
+декодеров находятся под указанными именами в игнорируемом Git каталоге
+`runs/`. Все шесть запусков сохранены локально и на исследовательской ВМ.
