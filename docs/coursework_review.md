@@ -1,5 +1,10 @@
 # Аудит `coursework.tex`
 
+> Архивный первичный аудит от 3 августа, а не последнее ревью
+> руководителя. Актуальное ревью см. в
+> [`reviews/supervisor_review_v1.md`](reviews/supervisor_review_v1.md), план реакции — в
+> [`review_response_v1.md`](review_response_v1.md).
+
 Проверено: 2026-08-03. Исходный файл перенесён в `report/coursework.tex` и
 добавлен в Git-репозиторий.
 

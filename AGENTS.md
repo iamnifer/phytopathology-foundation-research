@@ -142,8 +142,9 @@ review items are finished.
   both require a defined validation-tuned protocol.
 - Original preprocessing stretched every image to a square. New ablations must
   state `resize_mode` and augmentation preset explicitly.
-- `report/coursework.tex` has been moved into the repository but still describes
-  an earlier stage; synchronize it only after the current experiment series.
+- `report/coursework.tex` is the current draft of the final report. Keep its
+  tables, claims and limitations synchronized with verified experiment records;
+  never insert results from an unfinished run.
 - The unchanged legacy notebook is archived at
   `notebooks/archive/legacy_dinov3_experiment.ipynb` as provenance, not as the
   production training path.
