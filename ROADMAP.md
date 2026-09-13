@@ -5,7 +5,7 @@
 
 ## Обязательный финальный scope (до 18 сентября)
 
-- [ ] Обучить собственный CNN-бейзлайн DeepLabV3-ResNet50: pretrained, три
+- [x] Обучить собственный CNN-бейзлайн DeepLabV3-ResNet50: pretrained, три
       seed; добавить один scratch control.
 - [ ] Сравнить DINOv3 при 384/512/768 px без смены остальных факторов.
 - [ ] Посчитать paired image bootstrap (10 000 повторов) для главных
