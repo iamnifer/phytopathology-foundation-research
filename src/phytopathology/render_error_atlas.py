@@ -31,11 +31,17 @@ def parse_args() -> argparse.Namespace:
 
 
 def error_overlay(
-    image: np.ndarray, prediction: torch.Tensor, target: torch.Tensor, alpha: float = 0.62
+    image: np.ndarray,
+    prediction: torch.Tensor,
+    target: torch.Tensor,
+    alpha: float = 0.62,
+    ignore_index: int = 255,
 ) -> np.ndarray:
     result = image.copy()
-    predicted = prediction.numpy() == 1
-    actual = target.numpy() == 1
+    target_array = target.numpy()
+    valid = target_array != ignore_index
+    predicted = (prediction.numpy() == 1) & valid
+    actual = (target_array == 1) & valid
     categories = (
         (predicted & actual, np.array([0.10, 0.85, 0.10])),
         (predicted & ~actual, np.array([1.00, 0.10, 0.10])),
@@ -91,7 +97,12 @@ def main() -> None:
             prediction = (
                 model(image.unsqueeze(0).to(device)).argmax(dim=1).squeeze(0).cpu()
             )
-            overlay = error_overlay(denormalize(image, processor), prediction, target)
+            overlay = error_overlay(
+                denormalize(image, processor),
+                prediction,
+                target,
+                ignore_index=config.data.ignore_index,
+            )
             axis.imshow(overlay)
             axis.set_title(
                 f"#{len(manifest) + 1} {Path(name).name}\n"
