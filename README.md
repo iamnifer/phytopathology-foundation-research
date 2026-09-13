@@ -80,6 +80,8 @@ DINOv3 и SAM на семантическую сегментацию забол�
 [docs/experiments/015_label_efficiency_seed42.md](docs/experiments/015_label_efficiency_seed42.md).
 Повторы DeepLabV3 и их вычислительная стоимость записаны в
 [docs/experiments/018_deeplabv3_baseline.md](docs/experiments/018_deeplabv3_baseline.md).
+Контроль разрешения DINOv3 фиксируется в
+[docs/experiments/019_resolution_control.md](docs/experiments/019_resolution_control.md).
 
 ## Быстрый старт
 
