@@ -35,6 +35,7 @@ report/build/
 
 # Locally supplied coursework guidelines and example reports
 report/*.pdf
+!report/coursework.pdf
 report/examples/
 
 # Scratch presentation drafts found during the initial repository audit
