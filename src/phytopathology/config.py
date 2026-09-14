@@ -41,6 +41,7 @@ class ModelConfig:
     freeze_backbone: bool = True
     feature_layers: str = "last"
     pretrained: bool = True
+    feature_grid_size: int = 24
 
 
 @dataclass(frozen=True)

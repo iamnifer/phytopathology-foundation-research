@@ -109,6 +109,53 @@ class DeepLabV3Segmenter(nn.Module):
         return self.network(pixel_values)["out"]
 
 
+class FrozenResNet50LinearProbe(nn.Module):
+    """ImageNet ResNet-50 features with a frozen, spatially matched linear probe."""
+
+    def __init__(
+        self,
+        num_classes: int,
+        pretrained: bool = True,
+        feature_grid_size: int = 24,
+    ) -> None:
+        super().__init__()
+        if feature_grid_size <= 0:
+            raise ValueError("feature_grid_size must be positive")
+        from torchvision.models import ResNet50_Weights
+        from torchvision.models.segmentation import deeplabv3_resnet50
+
+        backbone_weights = ResNet50_Weights.IMAGENET1K_V2 if pretrained else None
+        network = deeplabv3_resnet50(
+            weights=None,
+            weights_backbone=backbone_weights,
+            num_classes=num_classes,
+            aux_loss=False,
+        )
+        self.backbone = network.backbone
+        self.feature_grid_size = feature_grid_size
+        for parameter in self.backbone.parameters():
+            parameter.requires_grad_(False)
+        self.decoder = nn.Conv2d(2048, num_classes, kernel_size=1)
+
+    def train(self, mode: bool = True):
+        super().train(mode)
+        self.backbone.eval()
+        return self
+
+    def forward(self, pixel_values: torch.Tensor) -> torch.Tensor:
+        height, width = pixel_values.shape[-2:]
+        with torch.no_grad():
+            features = self.backbone(pixel_values)["out"]
+        features = F.interpolate(
+            features,
+            size=(self.feature_grid_size, self.feature_grid_size),
+            mode="bilinear",
+            align_corners=False,
+        )
+        logits = self.decoder(features)
+        return F.interpolate(logits, size=(height, width), mode="bilinear", align_corners=False)
+
+
 def build_model(config: ModelConfig, num_classes: int) -> nn.Module:
     if config.architecture == "dinov3":
         return DINOv3Segmenter(
@@ -120,8 +167,15 @@ def build_model(config: ModelConfig, num_classes: int) -> nn.Module:
         )
     if config.architecture == "deeplabv3_resnet50":
         return DeepLabV3Segmenter(num_classes, pretrained=config.pretrained)
+    if config.architecture == "resnet50_linear_probe":
+        return FrozenResNet50LinearProbe(
+            num_classes,
+            pretrained=config.pretrained,
+            feature_grid_size=config.feature_grid_size,
+        )
     raise ValueError(
-        "model.architecture must be 'dinov3' or 'deeplabv3_resnet50'"
+        "model.architecture must be 'dinov3', 'deeplabv3_resnet50' "
+        "or 'resnet50_linear_probe'"
     )
 
 

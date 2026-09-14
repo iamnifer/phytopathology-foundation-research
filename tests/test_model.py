@@ -16,6 +16,25 @@ def test_deeplab_factory_without_download() -> None:
     assert trainable_state_dict(model).keys() == model.state_dict().keys()
 
 
+def test_frozen_resnet_linear_probe_without_download() -> None:
+    config = ModelConfig(
+        architecture="resnet50_linear_probe",
+        pretrained=False,
+        feature_grid_size=4,
+    )
+    model = build_model(config, num_classes=2).train()
+    assert not model.backbone.training
+    assert not any(parameter.requires_grad for parameter in model.backbone.parameters())
+    trainable_parameters = sum(
+        parameter.numel() for parameter in model.parameters() if parameter.requires_grad
+    )
+    assert trainable_parameters == 4098
+    with torch.inference_mode():
+        output = model(torch.randn(1, 3, 64, 64))
+    assert output.shape == (1, 2, 64, 64)
+    assert set(trainable_state_dict(model)) == {"decoder.weight", "decoder.bias"}
+
+
 def test_imagenet_processor_shape() -> None:
     from PIL import Image
 

@@ -1,0 +1,32 @@
+experiment:
+  name: resnet50_binary_linear_probe_cosine
+  output_dir: runs
+  seed: 42
+
+data:
+  root: data/plantseg_v3
+  metadata_file: Metadatav2.csv
+  image_size: 384
+  num_classes: 2
+  ignore_index: 255
+  batch_size: 16
+  num_workers: 8
+  binary_masks: true
+  resize_mode: stretch
+  augmentation: horizontal_flip
+
+model:
+  architecture: resnet50_linear_probe
+  backbone: resnet50
+  pretrained: true
+  feature_grid_size: 24
+
+training:
+  epochs: 30
+  learning_rate: 0.001
+  minimum_learning_rate: 0.00001
+  scheduler: cosine
+  weight_decay: 0.0001
+  amp: true
+  exclude_background_from_miou: false
+  selection_metric: foreground_iou

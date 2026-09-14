@@ -31,6 +31,6 @@ class ImageNetProcessor:
 def build_processor(config: ModelConfig):
     if config.architecture == "dinov3":
         return AutoImageProcessor.from_pretrained(config.backbone)
-    if config.architecture == "deeplabv3_resnet50":
+    if config.architecture in {"deeplabv3_resnet50", "resnet50_linear_probe"}:
         return ImageNetProcessor()
     raise ValueError(f"Unknown model architecture: {config.architecture}")
