@@ -90,6 +90,11 @@ All values below use 384×384 stretched inputs unless explicitly noted.
   random is only +0.0015/+0.0025, while farthest-first minus random is
   -0.0159/-0.0097 (paired means over three runs). Do not turn the 95% crossing
   into a sharp claim because its margin is much smaller than run-to-run noise.
+- Spherical k-means representatives at 10/25% give 0.6051 ± 0.0064 and
+  0.6236 ± 0.0037. They beat farthest-first by paired means +0.0194/+0.0115,
+  but differ from random by only +0.0035/+0.0018 and from stratified selection
+  by +0.0020/-0.0008. Interpret this as recovery from outlier bias, not a
+  stable win over simple baselines. See `docs/experiments/021_kmeans_selection.md`.
 - Exploratory multiclass ViT-B linear test mIoU: 0.3902. The notebook's saved
   `0.4575` is stale/inconsistent and must not be presented as verified.
 
@@ -125,15 +130,15 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
 2. The matched resolution controls, original-grid evaluation, paired bootstrap,
    healthy-set diagnostic, inference benchmarks, visual panels and manual error
    taxonomy are complete and incorporated into the report.
-3. Finish the bounded spherical k-means series at 10% and 25% for three seeds;
-   it is the only remaining experiment queue.
-4. Incorporate k-means, perform a final number-consistency audit, rebuild the
-   PDF and only then decide whether one final test evaluation is defensible.
+3. The bounded spherical k-means series at 10% and 25% for three seeds is
+   complete and incorporated into the report.
+4. The remaining work before submission is editorial: final number-consistency
+   checks, PDF inspection and presentation preparation if requested.
 
-The additional bounded data-selection experiment is now running: spherical
-k-means cluster representatives at 10% and 25% for seeds 42/43/44. It directly
-tests whether typical representatives avoid the outlier bias observed for
-farthest-first; do not expand this into a broad grid.
+The final test split should not be evaluated again: exploratory test results
+were already viewed and are disclosed, while the main claims are fixed on
+validation. A new test run would not repair that earlier reuse and is not needed
+for the stated conclusions.
 
 Do not spend the deadline window on SAM fine-tuning, DINO→SAM, uncertainty,
 partial unfreezing, ViT-L+conv or a broad clustering grid unless all mandatory
@@ -159,9 +164,11 @@ review items are finished.
   `notebooks/archive/legacy_dinov3_experiment.ipynb` as provenance, not as the
   production training path.
 - The coursework source is autonomous under `report/`: build it with
-  `latexmk coursework.tex` from that directory. XeLaTeX/biber are installed on
-  the VM. Title-page metadata in `report/metadata.tex` was copied from the
-  submitted KT-1 report; do not replace it with placeholders.
+  `latexmk coursework.tex` from that directory, then copy
+  `build/coursework.pdf` to `coursework.pdf` for the expected viewing path.
+  XeLaTeX/biber are installed on the VM. Title-page metadata in
+  `report/metadata.tex` was copied from the submitted KT-1 report; do not
+  replace it with placeholders.
 
 ## Repository hygiene
 

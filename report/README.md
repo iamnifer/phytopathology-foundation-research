@@ -15,7 +15,10 @@ sudo apt-get install latexmk texlive-xetex texlive-lang-cyrillic \
 
 ```bash
 latexmk coursework.tex
+cp build/coursework.pdf coursework.pdf
 ```
 
-PDF и вспомогательные файлы создаются в `report/build/`. Справочные PDF и
-примеры в этом каталоге не являются частью собираемого документа.
+Свежая сборка сначала создаётся как `report/build/coursework.pdf`, а второй
+командой копируется в ожидаемый для просмотра путь `report/coursework.pdf`.
+Обе копии игнорируются Git. Справочные PDF и примеры в этом каталоге не
+являются частью собираемого документа.
