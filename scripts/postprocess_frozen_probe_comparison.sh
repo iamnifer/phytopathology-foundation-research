@@ -40,4 +40,17 @@ for seed in 42 43 44; do
     --iterations 10000 \
     --seed 2026 \
     --output "artifacts/bootstrap/dino_vs_resnet_linear_probe_seed${seed}.json"
+
+  resnet_native_run=$(find_complete_run resnet50_binary_linear_probe_native48_cosine "${seed}")
+  .venv/bin/python -m phytopathology.analyze_predictions \
+    --config "${resnet_native_run}/config.yaml" \
+    --checkpoint "${resnet_native_run}/best.pt" \
+    --split val \
+    --output-dir "${resnet_native_run}/analysis_val_counts"
+  .venv/bin/python -m phytopathology.bootstrap_compare \
+    --baseline "${resnet_native_run}/analysis_val_counts/per_image.csv" \
+    --candidate "${resnet_run}/analysis_val_counts/per_image.csv" \
+    --iterations 10000 \
+    --seed 2026 \
+    --output "artifacts/bootstrap/resnet24_vs_resnet48_seed${seed}.json"
 done

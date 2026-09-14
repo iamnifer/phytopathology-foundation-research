@@ -69,7 +69,14 @@ All values below use 384×384 stretched inputs unless explicitly noted.
   0.6690 ± 0.0008 (sample SD). It is about 0.0171 above frozen DINOv3 while
   training 39.63M rather than 7.08M parameters. The matched seed-42 scratch
   control gives 0.5442 versus 0.6681 pretrained, a +0.1239 fixed-recipe
-  transfer effect; paired image bootstrap is queued.
+  transfer effect; its paired image-bootstrap 95% interval is [0.1094, 0.1391].
+- In the matched frozen-encoder linear probe, DINOv3 ViT-B/16 gives
+  0.5990 ± 0.0011 disease IoU versus 0.3860 ± 0.0044 for ResNet-50 on the same
+  24×24 grid, preprocessing, decoder, optimizer and three seeds. The paired
+  difference is +0.2129 ± 0.0034 and all three image-bootstrap 95% intervals
+  exclude zero. ResNet's native 48×48 feature grid gives 0.3703 ± 0.0041, so
+  downsampling does not explain the gap. This compares pretrained
+  representations, not architecture alone, because pretraining differs.
 - The matched seed-42 DINOv3 resolution controls give resized-grid disease IoU
   0.6569/0.6644/0.6671 at 384/512/768 px. The 768-px run selected epoch 21,
   took 3011.7 s and peaked at 3.31 GiB allocated CUDA memory. Do not interpret
@@ -134,7 +141,9 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
    taxonomy are complete and incorporated into the report.
 3. The bounded spherical k-means series at 10% and 25% for three seeds is
    complete and incorporated into the report.
-4. The remaining work before submission is editorial: final number-consistency
+4. The matched frozen linear-probe comparison and native-grid sensitivity
+   control are complete and incorporated into the report.
+5. The remaining work before submission is editorial: final number-consistency
    checks, PDF inspection and presentation preparation if requested.
 
 The final test split should not be evaluated again: exploratory test results
