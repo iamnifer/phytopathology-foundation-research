@@ -4,6 +4,8 @@ This repository is a coursework/research project on plant-disease semantic
 segmentation with DINOv3 and PlantSeg. Read `README.md`, `ROADMAP.md`,
 `docs/research_plan.md`, and `docs/colleague_experiments_review.md` before making
 research decisions. Record every completed run in `docs/experiments/`.
+The requirement-by-requirement completion check is recorded in
+`docs/final_audit_2026-09-16.md`.
 
 The official, immutable title supplied by the student is “Сравнение архитектур
 CNN и трансформеров для классификации заболеваний растений с применением
