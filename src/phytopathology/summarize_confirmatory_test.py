@@ -5,6 +5,8 @@ import json
 import statistics
 from pathlib import Path
 
+import yaml
+
 METRICS = (
     "foreground_iou",
     "miou",
@@ -14,28 +16,13 @@ METRICS = (
     "pixel_average_precision",
 )
 
-RUNS = {
-    "dino_practical": {
-        42: "20260908T172349Z_dinov3_vitb16_binary_multilayer_conv_cosine",
-        43: "20260914T110651Z_dinov3_vitb16_binary_multilayer_conv_cosine",
-        44: "20260914T112340Z_dinov3_vitb16_binary_multilayer_conv_cosine",
-    },
-    "cnn_practical": {
-        42: "20260916T131956Z_deeplabv3_resnet50_binary_pretrained",
-        43: "20260916T135548Z_deeplabv3_resnet50_binary_pretrained",
-        44: "20260916T143136Z_deeplabv3_resnet50_binary_pretrained",
-    },
-    "dino_probe": {
-        42: "20260918T114823Z_dinov3_vitb16_binary_linear_probe_cosine",
-        43: "20260918T120507Z_dinov3_vitb16_binary_linear_probe_cosine",
-        44: "20260918T122200Z_dinov3_vitb16_binary_linear_probe_cosine",
-    },
-    "resnet_probe": {
-        42: "20260918T105553Z_resnet50_binary_linear_probe_cosine",
-        43: "20260918T111317Z_resnet50_binary_linear_probe_cosine",
-        44: "20260918T113045Z_resnet50_binary_linear_probe_cosine",
-    },
+RUN_NAMES = {
+    "dino_practical": "dinov3_vitb16_binary_multilayer_conv_cosine",
+    "cnn_practical": "deeplabv3_resnet50_binary_pretrained",
+    "dino_probe": "dinov3_vitb16_binary_linear_probe_cosine",
+    "resnet_probe": "resnet50_binary_linear_probe_cosine",
 }
+SEEDS = (42, 43, 44)
 
 
 def aggregate(records: list[dict[str, object]]) -> dict[str, dict[str, float]]:
@@ -49,10 +36,26 @@ def aggregate(records: list[dict[str, object]]) -> dict[str, dict[str, float]]:
     return result
 
 
+def find_run(runs_root: Path, experiment_name: str, seed: int) -> Path:
+    matches = []
+    for path in sorted(runs_root.glob(f"*_{experiment_name}")):
+        config_path = path / "config.yaml"
+        if not config_path.is_file():
+            continue
+        config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+        if int(config.get("experiment", {}).get("seed", -1)) == seed:
+            matches.append(path)
+    if not matches:
+        raise FileNotFoundError(
+            f"No run found for experiment={experiment_name!r}, seed={seed} in {runs_root}"
+        )
+    return matches[-1]
+
+
 def load_group(runs_root: Path, group: str, native: bool = False) -> dict[str, object]:
     records = []
-    for seed, directory in RUNS[group].items():
-        path = runs_root / directory
+    for seed in SEEDS:
+        path = find_run(runs_root, RUN_NAMES[group], seed)
         metrics_path = (
             path / "confirmatory_test_native" / "summary.json"
             if native

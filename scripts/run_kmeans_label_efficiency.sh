@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+source "$(dirname -- "${BASH_SOURCE[0]}")/run_helpers.sh"
 cd "${project_root}"
+require_python
 
 for seed in 42 43 44; do
-  .venv/bin/python -m phytopathology.select_subsets \
+  "${python_bin}" -m phytopathology.select_subsets \
     --features features/dinov3_vitb16_train_mean_patches.npz \
     --metadata data/plantseg_v3/Metadatav2.csv \
     --output-dir "subsets/seed${seed}" \
     --methods kmeans \
     --budgets 0.1 0.25 \
     --seed "${seed}"
-  .venv/bin/python -m phytopathology.analyze_subsets \
+  "${python_bin}" -m phytopathology.analyze_subsets \
     --metadata data/plantseg_v3/Metadatav2.csv \
     --data-root data/plantseg_v3 \
     --manifests \

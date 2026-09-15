@@ -1,43 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+source "$(dirname -- "${BASH_SOURCE[0]}")/run_helpers.sh"
 cd "${project_root}"
-
-declare -A dino_practical=(
-  [42]="runs/20260908T172349Z_dinov3_vitb16_binary_multilayer_conv_cosine"
-  [43]="runs/20260914T110651Z_dinov3_vitb16_binary_multilayer_conv_cosine"
-  [44]="runs/20260914T112340Z_dinov3_vitb16_binary_multilayer_conv_cosine"
-)
-declare -A cnn_practical=(
-  [42]="runs/20260916T131956Z_deeplabv3_resnet50_binary_pretrained"
-  [43]="runs/20260916T135548Z_deeplabv3_resnet50_binary_pretrained"
-  [44]="runs/20260916T143136Z_deeplabv3_resnet50_binary_pretrained"
-)
-declare -A dino_probe=(
-  [42]="runs/20260918T114823Z_dinov3_vitb16_binary_linear_probe_cosine"
-  [43]="runs/20260918T120507Z_dinov3_vitb16_binary_linear_probe_cosine"
-  [44]="runs/20260918T122200Z_dinov3_vitb16_binary_linear_probe_cosine"
-)
-declare -A resnet_probe=(
-  [42]="runs/20260918T105553Z_resnet50_binary_linear_probe_cosine"
-  [43]="runs/20260918T111317Z_resnet50_binary_linear_probe_cosine"
-  [44]="runs/20260918T113045Z_resnet50_binary_linear_probe_cosine"
-)
+require_python
 
 evaluate_resized() {
   local run=$1
   local metrics="${run}/confirmatory_test_resized_metrics.json"
   local analysis="${run}/confirmatory_test_resized_counts"
   if [[ ! -f "${metrics}" ]]; then
-    .venv/bin/python -m phytopathology.evaluate \
+    "${python_bin}" -m phytopathology.evaluate \
       --config "${run}/config.yaml" \
       --checkpoint "${run}/best.pt" \
       --split test \
       --output "${metrics}"
   fi
   if [[ ! -f "${analysis}/per_image.csv" ]]; then
-    .venv/bin/python -m phytopathology.analyze_predictions \
+    "${python_bin}" -m phytopathology.analyze_predictions \
       --config "${run}/config.yaml" \
       --checkpoint "${run}/best.pt" \
       --split test \
@@ -49,7 +29,7 @@ evaluate_native() {
   local run=$1
   local output="${run}/confirmatory_test_native"
   if [[ ! -f "${output}/summary.json" || ! -f "${output}/per_image.csv" ]]; then
-    .venv/bin/python -m phytopathology.evaluate_native \
+    "${python_bin}" -m phytopathology.evaluate_native \
       --config "${run}/config.yaml" \
       --checkpoint "${run}/best.pt" \
       --split test \
@@ -59,28 +39,33 @@ evaluate_native() {
 
 mkdir -p artifacts/bootstrap
 for seed in 42 43 44; do
-  evaluate_resized "${dino_practical[$seed]}"
-  evaluate_resized "${cnn_practical[$seed]}"
-  evaluate_native "${dino_practical[$seed]}"
-  evaluate_native "${cnn_practical[$seed]}"
-  .venv/bin/python -m phytopathology.bootstrap_compare \
-    --baseline "${dino_practical[$seed]}/confirmatory_test_native/per_image.csv" \
-    --candidate "${cnn_practical[$seed]}/confirmatory_test_native/per_image.csv" \
+  dino_practical=$(find_complete_run dinov3_vitb16_binary_multilayer_conv_cosine "${seed}")
+  cnn_practical=$(find_complete_run deeplabv3_resnet50_binary_pretrained "${seed}")
+  dino_probe=$(find_complete_run dinov3_vitb16_binary_linear_probe_cosine "${seed}")
+  resnet_probe=$(find_complete_run resnet50_binary_linear_probe_cosine "${seed}")
+
+  evaluate_resized "${dino_practical}"
+  evaluate_resized "${cnn_practical}"
+  evaluate_native "${dino_practical}"
+  evaluate_native "${cnn_practical}"
+  "${python_bin}" -m phytopathology.bootstrap_compare \
+    --baseline "${dino_practical}/confirmatory_test_native/per_image.csv" \
+    --candidate "${cnn_practical}/confirmatory_test_native/per_image.csv" \
     --iterations 10000 \
     --seed 2026 \
     --output "artifacts/bootstrap/test_native_cnn_vs_dino_seed${seed}.json"
 
-  evaluate_resized "${dino_probe[$seed]}"
-  evaluate_resized "${resnet_probe[$seed]}"
-  .venv/bin/python -m phytopathology.bootstrap_compare \
-    --baseline "${resnet_probe[$seed]}/confirmatory_test_resized_counts/per_image.csv" \
-    --candidate "${dino_probe[$seed]}/confirmatory_test_resized_counts/per_image.csv" \
+  evaluate_resized "${dino_probe}"
+  evaluate_resized "${resnet_probe}"
+  "${python_bin}" -m phytopathology.bootstrap_compare \
+    --baseline "${resnet_probe}/confirmatory_test_resized_counts/per_image.csv" \
+    --candidate "${dino_probe}/confirmatory_test_resized_counts/per_image.csv" \
     --iterations 10000 \
     --seed 2026 \
     --output "artifacts/bootstrap/test_dino_vs_resnet_probe_seed${seed}.json"
 done
 
-.venv/bin/python -m phytopathology.summarize_confirmatory_test \
+"${python_bin}" -m phytopathology.summarize_confirmatory_test \
   --runs-root runs \
   --bootstrap-root artifacts/bootstrap \
   --output artifacts/confirmatory_test_summary.json

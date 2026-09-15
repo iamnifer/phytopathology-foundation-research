@@ -1,0 +1,81 @@
+{
+  "task": "binary PlantSeg lesion/background semantic segmentation",
+  "primary_metric": "dataset-level lesion IoU",
+  "dataset": {
+    "train_images": 7916,
+    "validation_images": 1247,
+    "test_images": 2295
+  },
+  "practical_test_native_grid": {
+    "seeds": [42, 43, 44],
+    "dinov3_vitb16_frozen_conv": {
+      "lesion_iou_mean": 0.6591,
+      "lesion_iou_sample_std": 0.0015,
+      "pixel_ap_mean": 0.8792,
+      "trainable_parameters_millions": 7.08
+    },
+    "deeplabv3_resnet50_finetuned": {
+      "lesion_iou_mean": 0.6804,
+      "lesion_iou_sample_std": 0.0030,
+      "pixel_ap_mean": 0.8786,
+      "trainable_parameters_millions": 39.63
+    },
+    "deeplabv3_minus_dinov3_lesion_iou": {
+      "mean": 0.0213,
+      "sample_std": 0.0032
+    },
+    "record": "docs/experiments/023_confirmatory_test_evaluation.md"
+  },
+  "matched_frozen_probe_test_384": {
+    "seeds": [42, 43, 44],
+    "dinov3_vitb16": {
+      "lesion_iou_mean": 0.6108,
+      "lesion_iou_sample_std": 0.0008,
+      "pixel_ap_mean": 0.8470
+    },
+    "resnet50": {
+      "lesion_iou_mean": 0.3976,
+      "lesion_iou_sample_std": 0.0039,
+      "pixel_ap_mean": 0.6577
+    },
+    "dinov3_minus_resnet50_lesion_iou": {
+      "mean": 0.2132,
+      "sample_std": 0.0031
+    },
+    "record": "docs/experiments/023_confirmatory_test_evaluation.md"
+  },
+  "dino_decoder_validation": {
+    "seeds": [42, 43, 44],
+    "four_layers_conv_30_epoch_cosine": {
+      "lesion_iou_mean": 0.6519,
+      "lesion_iou_sample_std": 0.0062
+    },
+    "last_layer_conv_30_epoch_cosine": {
+      "lesion_iou_mean": 0.6444,
+      "lesion_iou_sample_std": 0.0007
+    },
+    "paired_difference_mean": 0.0075,
+    "paired_difference_sample_std": 0.0069,
+    "record": "docs/experiments/012_decoder_controlled_series.md"
+  },
+  "annotation_efficiency_validation": {
+    "budget_fraction": 0.25,
+    "images": 1979,
+    "seeds": [42, 43, 44],
+    "random_lesion_iou_mean": 0.6218,
+    "random_lesion_iou_sample_std": 0.0064,
+    "stratified_lesion_iou_mean": 0.6243,
+    "stratified_lesion_iou_sample_std": 0.0028,
+    "farthest_first_lesion_iou_mean": 0.6121,
+    "farthest_first_lesion_iou_sample_std": 0.0051,
+    "interpretation": "approximately 95% of matched full-data quality; threshold crossing is not claimed as universal",
+    "record": "docs/experiments/016_label_efficiency_repeats.md"
+  },
+  "sam_oracle_validation": {
+    "model": "SAM ViT-B without fine-tuning",
+    "positive_point_lesion_iou": 0.3624,
+    "ground_truth_box_lesion_iou": 0.4659,
+    "interpretation": "oracle promptability diagnostic, not automatic lesion segmentation",
+    "record": "docs/experiments/014_sam_oracle_promptability.md"
+  }
+}

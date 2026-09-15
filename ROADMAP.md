@@ -1,126 +1,53 @@
-# План работы
+# Project status and future work
 
-Обновлено: 2026-09-16 после ревью руководителя. Полная мотивация и протокол находятся в
-[`docs/research_plan.md`](docs/research_plan.md).
+The coursework and its planned experimental programme were completed in
+September 2026. The final report, code, configurations, and experiment records
+are available in this repository.
 
-## Обязательный итоговый объём работы (до 18 сентября)
+## Completed scope
 
-- [x] Обучить собственную базовую CNN DeepLabV3-ResNet50: три запуска с
-      ImageNet-весами и один контроль со случайной инициализацией.
-- [x] Устранить различие режимов адаптации в межсемейном сравнении: заморозить
-      ResNet-50 и DINOv3, обучить одинаковые линейные головы на общей сетке,
-      выполнить три повтора, парный бутстреп и контроль исходной сетки CNN.
-- [x] Сравнить DINOv3 при 384/512/768 px без смены остальных факторов.
-- [x] Посчитать парный бутстреп по изображениям (10 000 повторов) для главных
-      валидационных сравнений и убрать выводы, не подтверждённые интервалами.
-- [x] Пересчитать среднее и стандартное отклонение эффективности разметки и
-      площадь под кривой по логарифму бюджета без общей точки 100%;
-      проанализировать состав выбранных подмножеств.
-- [x] Подготовить панели DINO/SAM/отбора и вручную классифицировать 50--100
-      наиболее плохих случаев.
-- [x] Добавить время/память/скорость и практические рекомендации.
-- [x] Переписать отчёт по матрице [`docs/review_response_v1.md`](docs/review_response_v1.md),
-      собрать PDF и проверить все числа.
-- [x] По заранее зафиксированному протоколу выполнить подтверждающую test-оценку
-      двух центральных сравнений на трёх seeds и парный бутстреп.
+- Replaced the original exploratory notebook with a reusable Python package and
+  configuration-driven command-line workflow.
+- Established a binary PlantSeg protocol with lesion IoU as the primary metric.
+- Compared frozen DINOv3 ViT-B/16 decoders, intermediate features, optimization
+  schedules, and input resolutions.
+- Trained DeepLabV3-ResNet50 from ImageNet initialization across three seeds and
+  ran a fixed-recipe random-initialization control.
+- Compared frozen DINOv3 and ResNet-50 encoders using the same linear decoder,
+  feature grid, preprocessing, optimizer, and seeds.
+- Evaluated fixed central configurations on the test split and computed paired
+  image-level bootstrap intervals.
+- Evaluated vanilla SAM with oracle point and box prompts.
+- Analysed errors by lesion size and manually annotated 64 difficult examples.
+- Measured false positives on healthy PlantWild v1 images as an external
+  domain-shift diagnostic.
+- Built annotation-efficiency curves and compared random, stratified,
+  farthest-first, and spherical k-means subset selection.
+- Produced a self-contained XeLaTeX report and a concise machine-readable
+  result summary.
 
-Не входят в обязательную часть этой версии: дообучение SAM/LoRA, сочетание
-неопределённости и разнообразия, частичное размораживание DINO, перенос
-финального рецепта на ViT-L и полная сетка $k$-means/$k$-medoids.
+The exact completion audit against the supervisor review is preserved in
+[`docs/final_audit_2026-09-15.md`](docs/final_audit_2026-09-15.md).
 
-## Сейчас
+## Possible extensions
 
-- [x] Проверить вычислительную ВМ, GPU и диск.
-- [x] Выделить переиспользуемый код обучения из исходного ноутбука.
-- [x] Исправить число классов, загрузку данных и расчёт mIoU.
-- [x] Скачать PlantSeg v2/v3 на ВМ и проверить разбиения/метаданные.
-- [x] Проверить диапазон пиксельных меток PlantSeg v3 (`0..115`).
-- [x] Выполнить минимальный тест на A100 и сохранить как эксперимент 001.
-- [x] Воспроизвести замороженный DINOv3 ViT-B/16 с линейным декодером.
-- [x] Уточнить основной протокол: бинарная задача «поражение / фон».
-- [x] Запустить полный ViT-B/16 с линейным декодером на 10 эпох.
-- [x] Оценить лучшую контрольную точку на тесте и отрисовать ошибки.
-- [x] Сравнить ViT-B/16 с ViT-L/16 при неизменном линейном декодере.
+These are research directions, not missing requirements of the submitted work:
 
-## Затем: качество
+1. Fine-tune the last DINOv3 blocks or use parameter-efficient adapters while
+   retaining the matched multi-seed protocol.
+2. Test ViT-L/16 with the same convolutional decoder used by ViT-B/16 to
+   separate encoder scale from decoder capacity.
+3. Combine uncertainty and diversity for sequential annotation after a small
+   labelled warm start.
+4. Replace global image descriptors with lesion-aware or patch-level selection
+   features.
+5. Fine-tune SAM's mask decoder and evaluate prompts that do not depend on
+   ground-truth masks.
+6. Extend the binary task to multiclass recognition of the original disease
+   labels and study domain adaptation explicitly.
+7. Repeat the external healthy-image evaluation after calibration or domain
+   adaptation.
 
-- [x] Сравнить линейный и свёрточный декодеры при одном протоколе.
-- [x] Проверить декодер по четырём промежуточным слоям DINOv3.
-- [x] Проверить калибровку порога только по валидации.
-- [x] Сравнить растяжение, сохранение пропорций с дополнением и умеренные
-      аугментации.
-- [x] Завершить 30-эпоховый многослойный запуск с косинусным расписанием
-      (валидационное IoU поражения 0.6569).
-- [x] Повторить многослойный запуск для начальных значений 43 и 44.
-- [x] Запустить однослойный свёрточный декодер с тем же 30-эпоховым расписанием
-      как обязательный контроль.
-- [x] Проверить увеличение веса целых изображений с малыми поражениями;
-      результат отрицательный.
-- [ ] Проверить фрагменты и функцию потерь с учётом поражения только после
-      основной серии эффективности данных.
-- [ ] Проверить частичное дообучение последних 1–2 блоков DINOv3.
-- [x] Выполнить минимум три запуска конфигураций декодера DINO с разными
-      начальными значениями.
-- [x] Добавить IoU поражения, Dice, точность/полноту и пиксельную AP.
-- [x] Добавить выбор и отрисовку лучших, типичных и худших бинарных прогнозов.
-- [x] Зафиксировать точное название метрики: пиксельная AP поражения, не COCO
-      mask AP.
-- [x] Зафиксировать среднее/стандартное отклонение; ориентир 0.70 не
-      использовать для выбора по тесту.
-
-## Затем: эффективность разметки
-
-- [x] Зафиксировать основную единицу бюджета: полностью размеченное изображение.
-- [x] Добавить фиксированное число шагов оптимизатора для сравнения подмножеств.
-- [x] Извлечь и закешировать дескрипторы изображений из признаков фрагментов
-      DINOv3.
-- [x] Подготовить вложенные случайные подмножества.
-- [x] Подготовить вложенные стратифицированные подмножества по метаданным.
-- [x] Сферический k-means: представители кластеров на 10/25%, три запуска.
-- [x] Подготовить вложенные подмножества жадного отбора наиболее удалённых
-      объектов.
-- [x] Построить кривые для начального значения 42 и случайного,
-      стратифицированного и жадного отбора на 1/5/10/25/50% обучения; тест не
-      использован.
-- [x] Повторить 10% и 25% для значений 43/44 и посчитать среднее и стандартное
-      отклонение.
-- [ ] Гибрид неопределённости и разнообразия после холодного старта.
-- [ ] Кривые качества для 1/5/10/25/50/100% обучения, среднее и стандартное
-      отклонение.
-
-## Отдельные ветки исследования
-
-- [x] SAM без дообучения: оценка по точке/рамке из эталонной маски.
-- [ ] Автоматические подсказки DINO→SAM без истинной разметки.
-- [ ] Дообучение декодера масок SAM; адаптер/LoRA только как второй этап.
-- [x] Визуализация ошибок и анализ качества по размеру поражения/болезни.
-- [x] Перестроить черновик итогового отчёта вокруг общей исследовательской цели.
-- [x] Добавить автономную XeLaTeX/biber сборку отчёта.
-
-## Критерий готовности эксперимента
-
-Эксперимент считается зафиксированным, если сохранены хеш коммита, фактическая
-конфигурация, версии Python/PyTorch/CUDA, начальное значение генератора,
-обучающая/валидационная функция потерь, mIoU, IoU по классам, лучшая контрольная
-точка и короткий вывод в `docs/experiments/`.
-
-## Текущий исследовательский вывод
-
-Согласованное линейное зондирование показало сильное различие готовых
-представлений: DINOv3 получил `0.5990 ± 0.0011`, ResNet-50 —
-`0.3860 ± 0.0044`, а парная разность составила `+0.2129 ± 0.0034`; результат
-сохранился при контроле исходной сетки CNN. На подтверждающей test-выборке
-разность линейных зондов почти не изменилась (`+0.2132 ± 0.0031`), а
-DeepLabV3 в практическом сравнении превзошёл DINOv3 на исходной сетке на
-`+0.0213 ± 0.0032`; все интервалы по трём seeds исключают ноль. Многослойный декодер имеет небольшой, но нестабильный средний выигрыш над
-однослойным (`+0.0075 ± 0.0069` в парном сравнении). Увеличение веса изображений
-с малыми масками не помогло даже нижнему квартилю, а рамка из эталона для
-замороженного SAM дала только `0.4659` IoU поражения. Повторы 10/25% показали:
-стратифицированный отбор отличается от случайного лишь на
-`+0.0015`/`+0.0025`, а жадный отбор наиболее удалённых объектов хуже на
-`-0.0159`/`-0.0097` (парные средние по трём запускам). Эти малые выборки
-требуют осторожной интерпретации. Представители сферического k-means дали
-`0.6051 ± 0.0064`/`0.6236 ± 0.0037`: они устранили провал жадного отбора, но
-практически совпали со случайной и стратифицированной выборкой. Обязательная
-экспериментальная программа после ревью завершена; до сдачи приоритетны только
-проверка согласованности текста и оформление.
+Any extension should keep model selection on validation, report at least three
+seeds for central claims, preserve negative results, and avoid further tuning on
+the final test split.

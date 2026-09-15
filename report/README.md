@@ -1,25 +1,33 @@
-# Текст курсовой работы
+# Отчёт по курсовой работе
 
-Основной файл — `coursework.tex`. Документ собирается автономно через XeLaTeX
-и biber. Поля титульного листа находятся в `metadata.tex` и заполнены по
-сданному отчёту КТ-1.
+Отчёт написан на русском языке и собирается с помощью XeLaTeX, biber и latexmk.
+Итоговая версия хранится в [coursework.pdf](coursework.pdf), основной исходный
+файл — [coursework.tex](coursework.tex).
 
-На Ubuntu необходимы пакеты:
+## Сборка из корня репозитория
+
+```bash
+./scripts/build_report.sh
+```
+
+Скрипт находит TinyTeX, если он установлен, запускает latexmk в каталоге
+`report/` и копирует `build/coursework.pdf` в `coursework.pdf`.
+
+## Системные пакеты в Ubuntu
 
 ```bash
 sudo apt-get install latexmk texlive-xetex texlive-lang-cyrillic \
   texlive-latex-extra biber fonts-liberation
 ```
 
-Сборка из каталога `report/`:
+Равнозначная ручная сборка:
 
 ```bash
+cd report
 latexmk coursework.tex
 cp build/coursework.pdf coursework.pdf
 ```
 
-Свежая сборка сначала создаётся как `report/build/coursework.pdf`, а второй
-командой копируется в ожидаемый для просмотра путь `report/coursework.pdf`.
-Финальная копия `report/coursework.pdf` хранится в Git для удобного просмотра,
-а каталог `report/build/`, справочные PDF и примеры игнорируются и не являются
-частью собираемого документа.
+Поля титульного листа заданы в `metadata.tex`, библиография — в `refs.bib`,
+иллюстрации — в `figures/`. Файлы сборки и полученные отдельно правила
+оформления намеренно исключены из Git.

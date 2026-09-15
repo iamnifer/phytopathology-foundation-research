@@ -1,91 +1,66 @@
-# Вычислительное окружение
+# Reproducibility environment
 
-Проверено 2026-09-08 на `compute-iamnifer` (Ubuntu 24.04, kernel
-6.8.0-139-generic).
+The reported experiments were run on Ubuntu 24.04 with an NVIDIA
+A100-SXM4-80GB GPU, 116 GiB RAM, and 28 logical CPU cores. The run logger stores
+the exact Git revision, source fingerprint, Python and PyTorch versions, CUDA
+runtime, GPU name, resolved configuration, and parameter counts alongside every
+training run.
 
-| Ресурс | Значение |
-|---|---|
-| GPU | NVIDIA A100-SXM4-80GB, 81920 MiB |
-| Driver | 595.71.05 server-open |
-| Driver CUDA capability | 13.2 |
-| CPU | 28 logical cores |
-| RAM | 116 GiB |
-| Root filesystem | 194 GiB total |
-| Свободно после setup/data | 171 GiB |
+The project does not depend on this exact machine. Full DINOv3 and DeepLabV3
+training requires a CUDA-capable GPU, while tests and lightweight analysis can
+run on CPU.
 
-На чистой ВМ GPU присутствовала в PCI, но драйвера и `nvidia-smi` не было.
-Были установлены рекомендованные Ubuntu compute packages:
+## Local environment
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y ubuntu-drivers-common
-sudo ubuntu-drivers install --gpgpu
-sudo apt-get install -y nvidia-utils-595-server python3.12-venv unzip aria2
-sudo modprobe nvidia
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e '.[dev,download]'
 ```
 
-Python-окружение расположено в `.venv`. Проверка PyTorch:
-
-```text
-torch 2.14.0+cu130
-CUDA runtime 13.0
-NVIDIA A100-SXM4-80GB
-```
-
-## Локальные данные и веса на ВМ
+Model and dataset paths are relative to the repository and are excluded from
+Git:
 
 ```text
 data/
-├── raw/
-│   ├── plantseg_v2.zip  # MD5 c321381894575e5dca83686d125fe2cd
-│   └── plantseg_v3.zip  # MD5 9458f4fb61d026df1580ce437df0b63a
-├── plantseg_v2/         # legacy: train/test, старая metadata с дефектом
-├── plantseg_v3/         # основной: train/val/test и Metadatav2.csv
-└── plantwild_hf/        # metadata и healthy test для внешней проверки
+└── plantseg_v3/
 models/
 ├── dinov3-vitb16-pretrain-lvd1689m/
 ├── dinov3-vitl16-pretrain-lvd1689m/
 └── sam-vit-base/
 ```
 
-PlantSeg v3 содержит 7916/1247/2295 изображений в train/val/test. В каждой
-проверенной PNG-маске встречаются фон `0` и один disease class; по датасету
-используются IDs `0..115`.
+PlantSeg v3 contains 7,916 train, 1,247 validation, and 2,295 test images. The
+dataset audit command checks file presence and mask-label ranges:
 
-Из PlantWild v1 подготовлен manifest 7840 здоровых изображений 30 видов
-растений: 5510/774/1556 в train/val/test. На ВМ загружены только 1556 test-
-изображений (около 383 MB), используемых для внешней оценки ложных тревог.
-Manifest и загрузка воспроизводятся командой
-`python -m phytopathology.prepare_plantwild_healthy`.
+```bash
+python -m phytopathology.audit_data data/plantseg_v3
+```
 
-Веса Hugging Face gated и без пользовательского токена возвращают HTTP 401.
-На ВМ использована публичная копия ModelScope:
+DINOv3 weights used in the experiments are available from ModelScope:
 
 ```bash
 modelscope download --model facebook/dinov3-vitb16-pretrain-lvd1689m \
   --local_dir models/dinov3-vitb16-pretrain-lvd1689m
 ```
 
-Старые установщики и черновые рендеры вынесены из репозитория ВМ в
-`/home/iamnifer/phytopathology-workspace-archive-20260916`. Карантин ошибочной
-синхронизации сохранён отдельно в
-`/home/iamnifer/sync-mistake-quarantine-20260916`; оба каталога можно удалить
-после сдачи, если артефакты точно не нужны.
+The optional PlantWild v1 diagnostic uses only healthy images from its official
+test split. Its manifest can be prepared with
+`python -m phytopathology.prepare_plantwild_healthy`; this external evaluation
+measures behaviour under domain shift and is not an in-domain specificity
+estimate.
 
-Завершённые ключевые запуски копируются с ВМ в локальный игнорируемый Git
-каталог `runs/`, включая лучшую контрольную точку, фактическую конфигурацию,
-окружение и полную историю метрик. Числа и выводы, необходимые без доступа к
-тяжёлым файлам, дополнительно фиксируются в `docs/experiments/`.
+## Run artefacts
 
-## Сборка отчёта
+Every training run creates a separate timestamped directory under `runs/` with:
 
-С 2026-09-14 на ВМ установлены `latexmk`, XeLaTeX, biber, кириллические и
-дополнительные LaTeX-пакеты, а также Liberation fonts. Отчёт собирается так:
+- the resolved YAML configuration;
+- Git revision, dirty-worktree flag, and source snapshot hash;
+- Python, PyTorch, CUDA, and GPU metadata;
+- total and trainable parameter counts;
+- JSONL metric history and the best checkpoint.
 
-```bash
-cd /home/iamnifer/phytopathology-foundation-research/report
-latexmk coursework.tex
-```
-
-Результат создаётся в `report/build/coursework.pdf`; каталог `build/`
-игнорируется Git.
+`runs/`, datasets, weights, cached features, and subset manifests are ignored by
+Git. Concise protocols and derived metrics are retained in `docs/experiments/`
+and `results/`.

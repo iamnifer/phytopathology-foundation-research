@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+source "$(dirname -- "${BASH_SOURCE[0]}")/run_helpers.sh"
 cd "${project_root}"
+require_python
 
 if [[ $# -lt 2 ]]; then
   echo "Usage: $0 METHOD SEED [BUDGET ...]" >&2
@@ -23,7 +24,7 @@ case "$method" in
 esac
 
 for budget in "${budgets[@]}"; do
-  PYTHONPATH=src .venv/bin/python -m phytopathology.train \
+  PYTHONPATH=src "${python_bin}" -m phytopathology.train \
     --config configs/dinov3_vitb16_binary_multilayer_conv_cosine.yaml \
     --subset-file "subsets/seed${seed}/${method}_seed${seed}_${budget}.json" \
     --epoch-samples 7916 \
