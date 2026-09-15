@@ -52,7 +52,7 @@ All values below use 384×384 stretched inputs unless explicitly noted.
 - Frozen ViT-B/16, layers 3/6/9/12 + conv decoder, 30-epoch cosine schedule:
   validation foreground IoU 0.6569 (epoch 25), mean IoU 0.7765, Dice 0.7929,
   precision 0.7713, recall 0.8158, AP 0.8723. Across seeds 42/43/44, foreground
-  IoU is 0.6519 ± 0.0062 (sample SD); test not evaluated.
+  IoU is 0.6519 ± 0.0062 (sample SD).
 - Matched last-layer convolutional decoder with the same 30-epoch cosine recipe
   gives 0.6444 ± 0.0007 over three seeds. The paired multi-layer difference is
   0.0075 ± 0.0069 and vanishes on seed 44; describe it as a modest, variable
@@ -85,7 +85,12 @@ All values below use 384×384 stretched inputs unless explicitly noted.
   95% bootstrap CI [-0.0049, 0.0323], so it is promising but inconclusive.
 - On the original annotation grid, seed-42 CNN versus DINO is +0.0077 with
   95% CI [-0.0212, 0.0373], unlike the significant resized-grid comparison.
-  Explicitly state that the small ranking difference depends on evaluation grid.
+  In the later confirmatory test series, CNN versus DINO is +0.0213 ± 0.0032
+  across three seeds on the native grid; all three image-bootstrap intervals
+  exclude zero. The grid changes effect magnitude, not test ranking.
+- Confirmatory test results for the matched frozen probes are DINOv3
+  0.6108 ± 0.0008 versus ResNet-50 0.3976 ± 0.0039, paired difference
+  +0.2132 ± 0.0031. All three image-bootstrap intervals exclude zero.
 - External healthy PlantWild v1 evaluation found mean predicted lesion area
   6.76% for DINO and 7.72% for CNN; 49.4% and 70.8% of images respectively
   exceed 1% predicted lesion area. This is a domain-shift diagnostic, not an
@@ -143,13 +148,13 @@ their DeepLabV3+/U-Net (~0.646) and the remaining gap is realistic.
    complete and incorporated into the report.
 4. The matched frozen linear-probe comparison and native-grid sensitivity
    control are complete and incorporated into the report.
-5. The remaining work before submission is editorial: final number-consistency
+5. The pre-registered confirmatory PlantSeg test series for the two central
+   comparisons is complete and incorporated into the report.
+6. The remaining work before submission is editorial: final number-consistency
    checks, PDF inspection and presentation preparation if requested.
 
-The final test split should not be evaluated again: exploratory test results
-were already viewed and are disclosed, while the main claims are fixed on
-validation. A new test run would not repair that earlier reuse and is not needed
-for the stated conclusions.
+Do not evaluate the final test split again. The bounded confirmatory series was
+fixed before calculation and is complete; further test use would be tuning.
 
 Do not spend the deadline window on SAM fine-tuning, DINO→SAM, uncertainty,
 partial unfreezing, ViT-L+conv or a broad clustering grid unless all mandatory

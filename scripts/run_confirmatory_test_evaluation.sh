@@ -79,3 +79,8 @@ for seed in 42 43 44; do
     --seed 2026 \
     --output "artifacts/bootstrap/test_dino_vs_resnet_probe_seed${seed}.json"
 done
+
+.venv/bin/python -m phytopathology.summarize_confirmatory_test \
+  --runs-root runs \
+  --bootstrap-root artifacts/bootstrap \
+  --output artifacts/confirmatory_test_summary.json
